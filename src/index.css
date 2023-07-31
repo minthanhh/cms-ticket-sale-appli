@@ -1,13 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+   box-sizing: border-box;
+}
+
+html,
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+   width: 100%;
+   height: 100%;
+}
+
+body {
+   font-family: 'Montserrat', sans-serif;
+   font-size: 14px;
+   background-color: #f9f6f4;
+}
+
+#root {
+   height: 100%;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+      monospace;
+}
+
+@layer base {
+   .default-animate {
+      @apply transition-all ease-linear duration-200;
+   }  
+}
+
+.ant-table-thead {
+   @apply bg-[#f1f4f8] !important
+}
+
+.ant-table-thead > tr > .ant-table-cell {
+   @apply leading-[26px] font-semibold font-montserrat text-base text-center !important
+}
+
+.ant-table-tbody > tr:nth-child(even) {
+   @apply bg-[#f7f8fb] 
+}
+
+.ant-table-cell {
+   @apply border-none !important
+}
+
+
+.ant-table-cell::before {
+   @apply w-0 !important
+}
+
+
+.ant-pagination-prev, .ant-pagination-next {
+   @apply flex items-center justify-center text-[#ff993b] !important 
+}
+
+.ant-pagination-prev.ant-pagination-disabled, .ant-pagination-next.ant-pagination-disabled {
+   @apply text-[#a5a8b1] !important
+}
+
+:where(.css-dev-only-do-not-override-txh9fw).ant-pagination .ant-pagination-item-active {
+   @apply border-[#ff993b]
+}
+
+:where(.css-dev-only-do-not-override-txh9fw).ant-pagination .ant-pagination-item-active:hover {
+   @apply border-[#ff993b] 
+}
+
+:where(.css-dev-only-do-not-override-txh9fw).ant-pagination .ant-pagination-item-active a {
+   @apply text-[#ffb877]
+}
+
+:where(.css-dev-only-do-not-override-txh9fw).ant-pagination .ant-pagination-item-active:hover a {
+   @apply text-[#ffb877]
+}
+
+.ant-table-row, .ant-table-cell {
+   @apply h-[48px] !important
+}
+
+.ant-modal-content {
+   @apply py-6 px-8 !important
 }

@@ -1,30 +1,30 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { DatePicker, Input, Modal, Select } from 'antd';
+import { DatePicker, Input, Modal, Select, Checkbox } from 'antd';
 
 import { RootState } from '@/store';
-
 import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks';
 import { onCloseModalUpdateTicketPackage } from '@/store/slices/modalAddTickets';
 import { ITicketPackage } from '@/types';
 import HeadingModal from './HeadingModal';
 import { IoIosArrowDown } from 'react-icons/io';
-import Checkbox, { CheckboxChangeEvent } from 'antd/es/checkbox';
 import Button from '../Button/Button';
+import dayjs from 'dayjs';
+import { CheckboxChangeEvent } from 'antd/es/checkbox';
+import { updateTicPackage } from '@/store/slices/ticketSlice';
 
 const ModalUpdateTicketPakage = () => {
    const dispatch = useAppDispatch();
+   const [searchParams, setSearchParams] = useSearchParams();
+   const [ticketPackage, setTicketPackage] = useState<ITicketPackage | null>(
+      null
+   );
    const [checked, setIsChecked] = useState({
       singleTicket: false,
       comboTicket: false,
    });
 
-   const [singleTicketPackage, setSingleTicketPackage] =
-      useState<ITicketPackage>();
-   const [status, setStatus] = useState(singleTicketPackage?.status);
-
-   const [searchParams, setSearchParams] = useSearchParams();
-   const { listTicketPackage } = useAppSelector(
+   const { listTicketPackage, isLoading } = useAppSelector(
       (state: RootState) => state.ticket
    );
    const { isOpenModalUpdateTicketPackage } = useAppSelector(
@@ -32,31 +32,23 @@ const ModalUpdateTicketPakage = () => {
    );
 
    useEffect(() => {
-      if (searchParams.get('id')) {
-         const getTicketPackageById = () => {
-            const data = listTicketPackage.find(
-               (item) => item.id === (searchParams.get('id') as string)
-            );
-            setSingleTicketPackage(data);
-         };
-         getTicketPackageById();
+      const ticketId = searchParams.get('id');
+      if (ticketId) {
+         const data = listTicketPackage.find((i) => i.id === ticketId);
+         setTicketPackage(data as ITicketPackage);
+      } else {
+         setTicketPackage(null);
       }
    }, [searchParams, listTicketPackage]);
 
    useEffect(() => {
-      if (singleTicketPackage?.comboTicket !== '') {
-         setIsChecked((prev) => ({ ...prev, comboTicket: true }));
-      }
-      if (singleTicketPackage?.singleTicket !== '') {
-         setIsChecked((prev) => ({ ...prev, singleTicket: true }));
-      }
-      if (
-         singleTicketPackage?.comboTicket !== '' &&
-         singleTicketPackage?.singleTicket !== ''
-      ) {
+      if (ticketPackage?.comboTicket && ticketPackage?.singleTicket) {
          setIsChecked({ comboTicket: true, singleTicket: true });
       }
-   }, [singleTicketPackage?.comboTicket, singleTicketPackage?.singleTicket]);
+      if (!ticketPackage?.comboTicket && ticketPackage?.singleTicket) {
+         setIsChecked({ comboTicket: false, singleTicket: true });
+      }
+   }, [ticketPackage?.comboTicket, ticketPackage?.singleTicket]);
 
    const handleChangeChecked = (e: CheckboxChangeEvent) => {
       const { checked, name } = e.target;
@@ -66,14 +58,57 @@ const ModalUpdateTicketPakage = () => {
       setIsChecked((prev) => ({ ...prev, [name!]: checked }));
    };
 
-   const handleChangeTicketPackage = (
-      e: React.ChangeEvent<HTMLInputElement>
-   ) => {
+   const handleChangeApplyTicket = (e: React.ChangeEvent<HTMLInputElement>) => {
       const { id, value } = e.target;
 
-      setSingleTicketPackage(
-         (prev) => ({ ...prev, [id]: value } as ITicketPackage)
-      );
+      if (checked.comboTicket && value === '') {
+         setTicketPackage(
+            (prev) => ({ ...prev, singleTicket: '' } as ITicketPackage)
+         );
+      }
+
+      if (checked.comboTicket && (id === 'comboTicket' || id === 'quantity')) {
+         setTicketPackage((prev) => {
+            let calc;
+
+            if (id === 'comboTicket') {
+               calc = (Number(value) / Number(prev?.quantity))
+                  .toFixed()
+                  .toString();
+            } else {
+               calc = (Number(prev?.comboTicket) / Number(value))
+                  .toFixed()
+                  .toString();
+            }
+            return {
+               ...prev,
+               [id]: value,
+               singleTicket: calc,
+            } as ITicketPackage;
+         });
+      } else {
+         setTicketPackage(
+            (prev) => ({ ...prev, [id]: value } as ITicketPackage)
+         );
+      }
+   };
+
+   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+
+      let updatedData = {
+         ...ticketPackage,
+      };
+
+      if (!checked.comboTicket) {
+         updatedData = {
+            ...ticketPackage,
+            comboTicket: '',
+            quantity: 1,
+         };
+      }
+
+      dispatch(updateTicPackage(updatedData as ITicketPackage));
    };
 
    return (
@@ -84,10 +119,12 @@ const ModalUpdateTicketPakage = () => {
             dispatch(onCloseModalUpdateTicketPackage());
             setSearchParams('');
          }}
+         footer={null}
+         closeIcon={null}
       >
          <HeadingModal title="Cập nhật thông tin gói vé" />
 
-         <form>
+         <form onSubmit={handleSubmit}>
             <div className="flex flex-col gap-6 w-full mb-[11px]">
                <div className="flex items-center w-full justify-between">
                   <div className="w-[35%]">
@@ -127,11 +164,44 @@ const ModalUpdateTicketPakage = () => {
                         <DatePicker
                            picker="date"
                            placeholder="dd/mm/yy"
+                           value={dayjs(
+                              ticketPackage?.effectiveDate.date,
+                              'DD/MM/YYYY'
+                           )}
+                           onChange={(_, date) =>
+                              setTicketPackage(
+                                 (prev) =>
+                                    ({
+                                       ...prev,
+                                       effectiveDate: {
+                                          date: date,
+                                          time: prev?.effectiveDate.time,
+                                       },
+                                    } as ITicketPackage)
+                              )
+                           }
                            format={'DD/MM/YYYY'}
                            className="border w-[129px] border-input placeholder-placeholder py-2 px-3 text-base leading-[19.5px] font-medium font-montserrat"
                         />
                         <DatePicker
                            picker="time"
+                           format={'hh:mm:ss'}
+                           value={dayjs(
+                              ticketPackage?.effectiveDate.time,
+                              'hh:mm:ss'
+                           )}
+                           onChange={(_, time) =>
+                              setTicketPackage(
+                                 (prev) =>
+                                    ({
+                                       ...prev,
+                                       effectiveDate: {
+                                          date: prev?.effectiveDate.date,
+                                          time: time,
+                                       },
+                                    } as ITicketPackage)
+                              )
+                           }
                            placeholder="hh:mm:ss"
                            className="border w-[129px] border-input placeholder-placeholder py-2 px-3 text-base leading-[19.5px] font-medium font-montserrat"
                         />
@@ -146,11 +216,44 @@ const ModalUpdateTicketPakage = () => {
                            placeholder="dd/mm/yy"
                            picker="date"
                            format={'DD/MM/YYYY'}
+                           value={dayjs(
+                              ticketPackage?.expirationDate.date,
+                              'DD/MM/YYYY'
+                           )}
+                           onChange={(_, date) =>
+                              setTicketPackage(
+                                 (prev) =>
+                                    ({
+                                       ...prev,
+                                       expirationDate: {
+                                          date: date,
+                                          time: prev?.expirationDate.time,
+                                       },
+                                    } as ITicketPackage)
+                              )
+                           }
                            className="border w-[129px] border-input placeholder-placeholder py-2 px-3 text-base leading-[19.5px] font-medium font-montserrat"
                         />
                         <DatePicker
                            placeholder="hh:mm:ss"
                            picker="time"
+                           format={'hh:mm:ss'}
+                           value={dayjs(
+                              ticketPackage?.expirationDate.time,
+                              'hh:mm:ss'
+                           )}
+                           onChange={(_, time) =>
+                              setTicketPackage(
+                                 (prev) =>
+                                    ({
+                                       ...prev,
+                                       expirationDate: {
+                                          date: prev?.expirationDate.date,
+                                          time: time,
+                                       },
+                                    } as ITicketPackage)
+                              )
+                           }
                            className="border w-[129px] border-input placeholder-placeholder py-2 px-3 text-base leading-[19.5px] font-medium font-montserrat"
                         />
                      </div>
@@ -169,20 +272,20 @@ const ModalUpdateTicketPakage = () => {
                      >
                         <Checkbox
                            name="singleTicket"
-                           onChange={handleChangeChecked}
                            checked={checked.singleTicket}
                            disabled={checked.comboTicket}
+                           onChange={handleChangeChecked}
                         />
                         Vé lẻ (vnđ/vé) với giá
                         <Input
                            placeholder="Giá vé"
                            width={148}
                            className="py-[10px] w-[148px] px-3 border-none rounded-lg"
-                           disabled={!checked.singleTicket}
                            id="singleTicket"
+                           value={ticketPackage?.singleTicket}
+                           disabled={!checked.singleTicket}
+                           onChange={handleChangeApplyTicket}
                            required
-                           value={singleTicketPackage?.singleTicket}
-                           onChange={handleChangeTicketPackage}
                         />
                         / vé
                      </label>
@@ -202,16 +305,20 @@ const ModalUpdateTicketPakage = () => {
                         <Input
                            placeholder="Giá vé"
                            className="py-[10px] w-[148px] px-3 border-none rounded-lg"
-                           disabled={!checked.comboTicket}
                            id="comboTicket"
+                           disabled={!checked.comboTicket}
+                           value={ticketPackage?.comboTicket}
+                           onChange={handleChangeApplyTicket}
                            required
                         />
                         /
                         <Input
                            placeholder="Giá vé"
                            className="py-[10px] w-[72px] px-3 border-none rounded-lg"
-                           disabled={!checked.comboTicket}
                            id="quantity"
+                           disabled={!checked.comboTicket}
+                           value={ticketPackage?.quantity as number}
+                           onChange={handleChangeApplyTicket}
                            required
                         />
                         vé
@@ -229,9 +336,14 @@ const ModalUpdateTicketPakage = () => {
 
                   <Select
                      id="status"
-                     value={status}
                      style={{ width: 176 }}
-                     onChange={(value) => setStatus(value)}
+                     value={ticketPackage?.status}
+                     onChange={(value) =>
+                        setTicketPackage(
+                           (prev) =>
+                              ({ ...prev, status: value } as ITicketPackage)
+                        )
+                     }
                      options={[
                         { value: 'apply', label: 'Đang áp dụng' },
                         { value: 'turnOff', label: 'Tắt' },
@@ -257,11 +369,19 @@ const ModalUpdateTicketPakage = () => {
                <Button
                   title="Huỷ"
                   outline
-                  onClick={() => dispatch(onCloseModalUpdateTicketPackage())}
+                  onClick={() => {
+                     dispatch(onCloseModalUpdateTicketPackage());
+                     setSearchParams('');
+                  }}
                   className="w-[160px]"
                   type="button"
                />
-               <Button title="Lưu" className="w-[160px]" type="submit" />
+               <Button
+                  title="Lưu"
+                  className="w-[160px]"
+                  type="submit"
+                  disabled={isLoading}
+               />
             </div>
          </form>
       </Modal>

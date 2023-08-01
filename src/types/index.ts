@@ -3,10 +3,12 @@ export interface ITicket {
     bookingCode?: Uppercase<string>  
     ticketNumber: number
     status: string
-    date: Date
-    tiketIssueDate: Date
+    date: string
+    tiketIssueDate: string
     checkInGate: string
     eventName?: string
+    ticketTypeName?: string
+    checkTicket: boolean
 }
 
 

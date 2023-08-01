@@ -88,3 +88,39 @@ code {
 .ant-modal-content {
    @apply py-6 px-8 !important
 }
+
+.ant-picker-header-super-prev-btn, .ant-picker-header-super-next-btn {
+   @apply hidden
+}
+
+.ant-picker-header {
+   @apply gap-4 items-center justify-start p-0 border-none pt-6 px-6 mb-4 !important
+}
+
+.ant-picker-body {
+   @apply px-6 py-6 block !important
+}
+
+
+.ant-picker-header-view {
+   @apply flex flex-initial items-center font-montserrat font-bold text-lg   !important
+}
+
+
+.ant-picker-body {
+   @apply pt-0 !important
+}
+
+:where(.css-dev-only-do-not-override-txh9fw).ant-picker-dropdown .ant-picker-header button {
+   @apply leading-none
+}
+
+.ant-picker-header-prev-btn, .ant-picker-header-next-btn {
+   @apply flex items-center justify-center
+}
+
+
+
+.ant-picker-cell {
+   @apply  !important
+}

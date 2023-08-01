@@ -124,7 +124,7 @@ const ListOfTicketPackages = () => {
             },
          },
       ],
-      []
+      [dispatch, setSearchParams]
    );
 
    return (

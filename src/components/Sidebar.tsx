@@ -9,7 +9,7 @@ const Sidebar = () => {
       },
       {
          label: 'Quản lý vé',
-         pathname: '/manage-tickets',
+         pathname: '/manage-tickets/family-ticket-package',
       },
       {
          label: 'Đối soát vé',

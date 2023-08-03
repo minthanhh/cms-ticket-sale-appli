@@ -28,11 +28,23 @@ code {
    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
       monospace;
 }
+tr {
+   border-bottom: none !important
+}
 
 @layer base {
    .default-animate {
       @apply transition-all ease-linear duration-200;
    }  
+   
+   .flat::before {
+      content: '';
+      position: absolute;
+      right: -10px;
+      border: 10px solid;
+      @apply top-2/4 -translate-y-2/4
+      
+   }
 }
 
 .ant-table-thead {
@@ -124,3 +136,10 @@ code {
 .ant-picker-cell {
    @apply  !important
 }
+
+.ant-table-cell {
+   @apply relative select-none !important
+}
+
+
+

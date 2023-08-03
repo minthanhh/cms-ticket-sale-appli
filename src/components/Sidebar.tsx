@@ -1,23 +1,47 @@
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import Logo from './Logo';
+import {
+   Home,
+   HomeActive,
+   Invoice,
+   InvoiceActive,
+   Setting,
+   SettingActive,
+   Ticket,
+   TicketActive,
+} from '@/assets';
 
 const Sidebar = () => {
+   const location = useLocation();
+
    const routes = [
       {
          label: 'Trang chủ',
          pathname: '/',
+         icon: Home,
+         activeIcon: HomeActive,
+         active: location.pathname === '/',
       },
       {
+         activeIcon: TicketActive,
          label: 'Quản lý vé',
          pathname: '/manage-tickets/family-ticket-package',
+         active: location.pathname === '/manage-tickets/family-ticket-package',
+         icon: Ticket,
       },
       {
          label: 'Đối soát vé',
          pathname: '/checking-tickets',
+         activeIcon: InvoiceActive,
+         active: location.pathname === '/checking-tickets',
+         icon: Invoice,
       },
       {
          label: 'Cài đặt',
          pathname: '/settings/list-of-ticket-packages',
+         activeIcon: SettingActive,
+         active: location.pathname === '/settings/list-of-ticket-packages',
+         icon: Setting,
       },
    ];
 
@@ -37,8 +61,23 @@ const Sidebar = () => {
                         }
                         to={route.pathname}
                      >
-                        {route.label}
+                        <span className="flex items-center gap-3">
+                           {route.active ? (
+                              <img src={route.activeIcon} alt="" />
+                           ) : (
+                              <img src={route.icon} alt="" />
+                           )}
+                           {route.label}
+                        </span>
                      </NavLink>
+                     {route.pathname.includes('/settings') ? (
+                        <Link
+                           to={route.pathname}
+                           className="flex items-center justify-center leading-[26px] text-lg font-medium font-montserrat tracking-[1.5%] text-secondary mt-2"
+                        >
+                           Gói dịch vụ
+                        </Link>
+                     ) : null}
                   </li>
                ))}
             </ul>

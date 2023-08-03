@@ -29,6 +29,10 @@ export interface ITicketPackage {
         time: string;
     };
     quantity: number | string | null;
-
+    ticketNumber?: number
+    checkInGate?: string
+    checkTicket?: boolean
+    ticketTypeName?: string
+    usageStatus?: string
 }
 

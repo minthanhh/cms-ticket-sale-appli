@@ -2,7 +2,7 @@ import { SearchIcon } from '@/assets';
 
 const Search = () => {
    return (
-      <div className="w-[437px] h-[48px] bg-input border-none rounded-xl flex items-center gap-4 relative">
+      <div className="w-[437px] h-[48px] border-none rounded-xl flex items-center gap-4 relative bg-[#ededed] shadow-sm">
          <input
             type="text"
             id="headerSearch"

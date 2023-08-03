@@ -5,7 +5,8 @@ const modalAddTicketSlice = createSlice({
     initialState: {
         isOpenModalAddTickets: false,
         isOpenModalUpdateTicketPackage: false,
-        isOpenModalFillter: false
+        isOpenModalFillter: false,
+        isOpenModalChangeDateTicketUse: false
     },
     reducers: {
         onOpenModalAddTickets(state) {
@@ -25,9 +26,15 @@ const modalAddTicketSlice = createSlice({
         },
         onCloseModalFillter(state) {
             state.isOpenModalFillter = false
-        }
+        },
+        onOpenModalChangeDateTicketUse(state) {
+            state.isOpenModalChangeDateTicketUse = true
+        },
+        onCloseModalChangeDateTicketUse(state) {
+            state.isOpenModalChangeDateTicketUse = false
+        },
     }
 })
 
-export const { onOpenModalFillter, onCloseModalFillter, onCloseModalAddTickets, onOpenModalAddTickets, onCloseModalUpdateTicketPackage,onOpenModalUpdateTicketPackage } = modalAddTicketSlice.actions
+export const {onOpenModalChangeDateTicketUse, onCloseModalChangeDateTicketUse, onOpenModalFillter, onCloseModalFillter, onCloseModalAddTickets, onOpenModalAddTickets, onCloseModalUpdateTicketPackage,onOpenModalUpdateTicketPackage } = modalAddTicketSlice.actions
 export default modalAddTicketSlice.reducer

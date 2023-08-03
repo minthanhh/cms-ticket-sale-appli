@@ -58,8 +58,6 @@ const ModalFilter = () => {
       }
    };
 
-   console.log(isChecked);
-
    const handleChangeStatus = (e: RadioChangeEvent) => {
       const { value } = e.target;
       setIsCheckedRadio(value);

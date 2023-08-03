@@ -1,22 +1,34 @@
 import { Button, Heading } from '@/components';
 import TableSearch from '@/components/Table/SearchTable';
-import { ITicket } from '@/types';
+import { ITicketPackage } from '@/types';
 import { DatePicker, Radio, Table } from 'antd';
 import type { TableColumnsType } from 'antd';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BiSolidLeftArrow, BiSolidRightArrow } from 'react-icons/bi';
 import { twMerge } from 'tailwind-merge';
 import { LuCalendarDays } from 'react-icons/lu';
 import dayjs from 'dayjs';
+import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks';
+import { RootState } from '@/store';
+import { getAllTicketPackage } from '@/store/slices/ticketSlice';
+import { checkTickets } from '@/store/slices/ticketSlice';
+import { exportToCSV } from '@/helpers';
 
 const CheckTicket = () => {
-   const [dataTable, setDataTable] = useState<ITicket[]>([]);
-   const [filterdData, setFilteredData] = useState<ITicket[]>([]);
+   const { listTicketPackage, isLoading } = useAppSelector(
+      (state: RootState) => state.ticket
+   );
+
+   const dispatch = useAppDispatch();
+   const [dataTable, setDataTable] = useState<ITicketPackage[]>([]);
+   const [filterdData, setFilteredData] = useState<ITicketPackage[]>([]);
+   const [searchText, setSearchText] = useState<string>('');
    const [checkTicket, setCheckTicket] = useState<boolean>();
    const [startDate, setStartDate] = useState('');
    const [endDate, setEndDate] = useState('');
+   const [checkedTicket, setCheckedTicket] = useState(false);
 
-   const columns: TableColumnsType<ITicket> = [
+   const columns: TableColumnsType<ITicketPackage> = [
       {
          title: 'STT',
          dataIndex: 'stt',
@@ -29,8 +41,11 @@ const CheckTicket = () => {
       },
       {
          title: 'Ngày sử dụng',
-         dataIndex: 'date',
-         key: 'date',
+         dataIndex: 'effectiveDate',
+         key: 'effectiveDate',
+         render(value, _) {
+            return `${value.date}`;
+         },
       },
       {
          title: 'Tên loại vé',
@@ -44,7 +59,6 @@ const CheckTicket = () => {
       },
       {
          dataIndex: 'checkTicket',
-
          key: 'checkTicket',
          render(value) {
             return (
@@ -61,158 +75,18 @@ const CheckTicket = () => {
       },
    ];
 
-   const data: ITicket[] = useMemo(
-      () => [
-         {
-            stt: 1,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'used',
-            date: '24/08/2023',
-            checkTicket: true,
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-            ticketTypeName: 'Vé cổng',
-         },
-         {
-            stt: 2,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'expired',
-            date: '12/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkTicket: true,
-            ticketTypeName: 'Vé cổng',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 3,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            checkTicket: false,
-            status: 'used',
-            date: '11/08/2023',
-            tiketIssueDate: '11/08/2023',
-            ticketTypeName: 'Vé cổng',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 4,
-            checkTicket: false,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'notUsedYet',
-            date: '16/08/2023',
-            tiketIssueDate: '11/08/2023',
-            ticketTypeName: 'Vé cổng',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 5,
-            bookingCode: 'ALTFGHJU',
-            checkTicket: true,
-            ticketNumber: 123456789034,
-            status: 'used',
-            date: '19/08/2023',
-            ticketTypeName: 'Vé cổng',
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 5,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'used',
-            date: '22/08/2023',
-            checkTicket: true,
-            ticketTypeName: 'Vé cổng',
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 6,
-            ticketTypeName: 'Vé cổng',
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'used',
-            date: '23/08/2023',
-            checkTicket: false,
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 7,
-            ticketTypeName: 'Vé cổng',
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            checkTicket: false,
-            status: 'used',
-            date: '25/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 8,
-            bookingCode: 'ALTFGHJU',
-            ticketTypeName: 'Vé cổng',
-            checkTicket: false,
-            ticketNumber: 123456789034,
-            status: 'used',
-            date: '28/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 9,
-            bookingCode: 'ALTFGHJU',
-            ticketTypeName: 'Vé cổng',
-            ticketNumber: 123456789034,
-            status: 'used',
-            checkTicket: false,
-            date: '30/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 10,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            ticketTypeName: 'Vé cổng',
-            status: 'used',
-            date: '23/08/2023',
-            checkTicket: false,
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 11,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            ticketTypeName: 'Vé cổng',
-            status: 'used',
-            date: '15/08/2023',
-            checkTicket: false,
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 12,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'used',
-            ticketTypeName: 'Vé cổng',
-            date: '21/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkTicket: false,
-            checkInGate: 'Cổng 1',
-         },
-      ],
-      []
-   );
+   useEffect(() => {
+      dispatch(getAllTicketPackage());
+   }, [dispatch]);
 
    useEffect(() => {
-      setDataTable(data);
-   }, [data]);
+      setDataTable(listTicketPackage);
+   }, [listTicketPackage]);
+
+   useEffect(() => {
+      const check = dataTable.every((i) => i.checkTicket === true);
+      setCheckedTicket(check);
+   }, [dataTable]);
 
    const handleFilterTable = (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -223,7 +97,7 @@ const CheckTicket = () => {
          const end = dayjs(endDate, format).date();
 
          const filter = dataTable.filter((item) => {
-            const day = dayjs(item.date, format).date();
+            const day = dayjs(item.effectiveDate.date, format).date();
 
             if (checkTicket === true) {
                return (
@@ -256,14 +130,40 @@ const CheckTicket = () => {
       }
    };
 
+   const globalSearch = () => {
+      const filteredData = dataTable.filter((i) =>
+         i.ticketNumber?.toString().toLowerCase().includes(searchText)
+      );
+
+      setFilteredData(filteredData);
+   };
+
    return (
       <div className="w-full h-[calc(100%_-_32px)] flex items-start gap-6">
          <div className="bg-white rounded-3xl shadow-md p-6 w-8/12 h-full">
             <Heading title="Đối soát vé" />
 
             <div className="flex items-center justify-between mb-6">
-               <TableSearch />
-               <Button title="Chốt đối soát" />
+               <TableSearch
+                  onChange={(e) => {
+                     setSearchText(e.target.value);
+                     globalSearch();
+                  }}
+                  value={searchText}
+               />
+               {checkedTicket ? (
+                  <Button
+                     title="Xuất file (.csv)"
+                     outline
+                     onClick={() => exportToCSV(dataTable)}
+                  />
+               ) : (
+                  <Button
+                     title="Chốt đối soát"
+                     onClick={() => dispatch(checkTickets())}
+                     disabled={isLoading}
+                  />
+               )}
             </div>
 
             <Table

@@ -1,18 +1,30 @@
-import { useMemo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Table, TableColumnsType } from 'antd';
 import { FiFilter } from 'react-icons/fi';
 
 import { Button, Status, TableSearch } from '@/components';
-import { ITicket } from '@/types';
-import { useAppDispatch } from '@/hooks/storeHooks';
-import { onOpenModalFillter } from '@/store/slices/modalAddTickets';
+import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks';
+import {
+   onOpenModalChangeDateTicketUse,
+   onOpenModalFillter,
+} from '@/store/slices/modalAddTickets';
 import { BiSolidLeftArrow, BiSolidRightArrow } from 'react-icons/bi';
+import { RootState } from '@/store';
+import { ITicketPackage } from '@/types';
+import { exportToCSV } from '@/helpers';
+import { BsThreeDotsVertical } from 'react-icons/bs';
 
 const EvenPackage = () => {
    const dispatch = useAppDispatch();
-   const [dataTable, setDataTable] = useState<ITicket[]>([]);
+   const [dataTable, setDataTable] = useState<ITicketPackage[]>([]);
+   const [searchText, setSearchText] = useState<string>('');
+   const [toggleTooltip, setTooltip] = useState(false);
+   const [filteredData, setFilterdData] = useState<ITicketPackage[]>([]);
+   const { listTicketPackage } = useAppSelector(
+      (state: RootState) => state.ticket
+   );
 
-   const columns: TableColumnsType<ITicket> = [
+   const columns: TableColumnsType<ITicketPackage> = [
       {
          title: 'STT',
          dataIndex: 'stt',
@@ -30,8 +42,8 @@ const EvenPackage = () => {
       },
       {
          title: 'Tình trạng sử dụng',
-         dataIndex: 'status',
-         key: 'status',
+         dataIndex: 'usageStatus',
+         key: 'usageStatus',
          render: Status,
       },
       {
@@ -41,159 +53,76 @@ const EvenPackage = () => {
       },
       {
          title: 'Ngày xuất vé',
-         dataIndex: 'tiketIssueDate',
-         key: 'tiketIssueDate',
+         dataIndex: 'effectiveDate',
+         key: 'effectiveDate',
+         render(value, _) {
+            return `${value.date}`;
+         },
       },
       {
          title: 'Cổng check - in',
          dataIndex: 'checkInGate',
          key: 'checkInGate',
       },
+      {
+         dataIndex: 'tooltip',
+         key: 'tooltip',
+         render(value, record, index) {
+            return record.usageStatus === 'notUsedYet' ? (
+               <>
+                  <BsThreeDotsVertical
+                     size={24}
+                     className="cursor-pointer"
+                     onClick={() => setTooltip((v) => !v)}
+                  />
+                  {toggleTooltip ? (
+                     <div className="bg-[#FFD2A8] shadow-md absolute top-0 right-full overflow-hidden flex items-center flex-col justify-center w-max rounded-lg">
+                        <button className="px-3 py-2 w-full hover:bg-[#caa786] default-animate">
+                           Sử dụng vé
+                        </button>
+                        <button
+                           onClick={() =>
+                              dispatch(onOpenModalChangeDateTicketUse())
+                           }
+                           className="px-3 w-full hover:bg-[#caa786] py-2 default-animate"
+                        >
+                           Đổi ngày sử dụng
+                        </button>
+                     </div>
+                  ) : null}
+               </>
+            ) : (
+               ''
+            );
+         },
+      },
    ];
-   const data: ITicket[] = useMemo(
-      () => [
-         {
-            stt: 1,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'used',
-            date: '24/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-            checkTicket: false,
-         },
-         {
-            stt: 2,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'expired',
-            date: '12/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkTicket: false,
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 3,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'used',
-            date: '11/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkTicket: false,
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 4,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'notUsedYet',
-            checkTicket: false,
-            date: '16/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 5,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'used',
-            checkTicket: false,
-            date: '19/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 5,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            checkTicket: false,
-            status: 'used',
-            date: '22/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 6,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'used',
-            checkTicket: false,
-            date: '23/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 7,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'used',
-            date: '25/08/2023',
-            checkTicket: false,
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 8,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'used',
-            checkTicket: false,
-            date: '28/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 9,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'used',
-            date: '30/08/2023',
-            checkTicket: false,
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 10,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'used',
-            date: '23/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkTicket: false,
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 11,
-            checkTicket: false,
-            bookingCode: 'ALTFGHJU',
-            ticketNumber: 123456789034,
-            status: 'used',
-            date: '15/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-         {
-            stt: 12,
-            bookingCode: 'ALTFGHJU',
-            checkTicket: false,
-            ticketNumber: 123456789034,
-            status: 'used',
-            date: '21/08/2023',
-            tiketIssueDate: '11/08/2023',
-            checkInGate: 'Cổng 1',
-         },
-      ],
-      []
-   );
 
    useEffect(() => {
-      setDataTable(data);
-   }, [data]);
+      const eventPackage = listTicketPackage.filter(
+         (i) => i.ticketPackageName === 'Gói sự kiện'
+      );
+      setDataTable(eventPackage);
+   }, [listTicketPackage]);
+
+   const globalSearch = () => {
+      const filteredData = dataTable.filter((value) =>
+         value.bookingCode?.toLowerCase().includes(searchText.toLowerCase())
+      );
+
+      setFilterdData(filteredData);
+   };
 
    return (
       <>
          <div className="flex items-center justify-between mb-[31px]">
-            <TableSearch />
+            <TableSearch
+               onChange={(e) => {
+                  setSearchText(e.target.value);
+                  globalSearch();
+               }}
+               value={searchText}
+            />
 
             <div className="flex flex-row items-center gap-[10px]">
                <Button
@@ -202,7 +131,11 @@ const EvenPackage = () => {
                   icon={FiFilter}
                   onClick={() => dispatch(onOpenModalFillter())}
                />
-               <Button title="Xuất file (.csv)" outline onClick={() => {}} />
+               <Button
+                  title="Xuất file (.csv)"
+                  outline
+                  onClick={() => exportToCSV(dataTable)}
+               />
             </div>
          </div>
 
@@ -210,7 +143,9 @@ const EvenPackage = () => {
             rowClassName="text-secondary leading-[22px] text-sm font-medium text-center font-montserrat"
             className="w-full"
             columns={columns}
-            dataSource={dataTable}
+            dataSource={
+               filteredData && filteredData.length ? filteredData : dataTable
+            }
             pagination={{
                position: ['bottomCenter'],
                className: 'mt-[50px]',

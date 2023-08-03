@@ -7,15 +7,17 @@ import {
    ManageTicket,
 } from './pages';
 import { DashboardLayout } from './layouts';
-import ListOfTicketPackages from './pages/Settings/ListOfTicketPackages';
 import ModalAddTickets from './components/Modal/ModalAddTickets';
 import ModalUpdateTicketPakage from './components/Modal/ModalUpdateTicketPakage';
 import ModalFilter from './components/Modal/ModalFilter';
+import ListOfTicketPackages from './pages/Settings/ListOfTicketPackages';
+import ModalChangeTicketDay from './components/Modal/ModalChangeDateTicketUse';
 
 const App = () => {
    return (
       <>
          <Router>
+            <ModalChangeTicketDay />
             <ModalAddTickets />
             <ModalUpdateTicketPakage />
             <ModalFilter />

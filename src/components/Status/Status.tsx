@@ -4,7 +4,7 @@ const Status: React.FC = (value) => {
    return (
       <div
          className={twMerge(
-            'py-2 px-3 rounded-[4px] w-max border flex items-center gap-2 text-xs leading-[14.63px] font-medium font-montserrat select-none',
+            'py-2 px-3 rounded-[4px] w-max border flex items-center gap-2 text-xs leading-[14.63px] font-medium font-montserrat select-none mx-auto',
             value === 'expired' || value === 'turnOff'
                ? 'border-expired bg-bgExpired text-expired'
                : value === 'notUsedYet' || value === 'apply'

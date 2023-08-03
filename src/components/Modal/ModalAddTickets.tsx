@@ -1,27 +1,18 @@
-import { RootState } from '@/store';
-import {
-   Checkbox,
-   ConfigProvider,
-   DatePicker,
-   Input,
-   Modal,
-   Select,
-} from 'antd';
+import { Checkbox, DatePicker, Input, Modal, Select } from 'antd';
+import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { IoIosArrowDown } from 'react-icons/io';
 import { WiTime3 } from 'react-icons/wi';
-import { useSelector } from 'react-redux';
-import Button from '../Button/Button';
-import { onCloseModalAddTickets } from '@/store/slices/modalAddTickets';
-import { useState, useEffect } from 'react';
-import { CheckboxChangeEvent } from 'antd/es/checkbox';
-import locale from 'antd/locale/vi_VN';
-import dayjs from 'dayjs';
-import 'dayjs/locale/vi';
-import HeadingModal from './HeadingModal';
-import { addTicketPackage } from '@/store/slices/ticketSlice';
-import { ITicketPackage } from '@/types';
-import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks';
 import { SerializedError } from '@reduxjs/toolkit';
+import { CheckboxChangeEvent } from 'antd/es/checkbox';
+
+import { RootState } from '@/store';
+import { ITicketPackage } from '@/types';
+import { onCloseModalAddTickets } from '@/store/slices/modalAddTickets';
+import { addTicketPackage } from '@/store/slices/ticketSlice';
+import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks';
+import Button from '../Button/Button';
+import HeadingModal from './HeadingModal';
 
 const ModalAddTickets = () => {
    const { isOpenModalAddTickets } = useSelector(
@@ -218,37 +209,35 @@ const ModalAddTickets = () => {
                         Ngày áp dụng
                      </label>
                      <div className="flex items-center gap-[9px]">
-                        <ConfigProvider locale={locale}>
-                           <DatePicker
-                              picker="date"
-                              placeholder="dd/mm/yy"
-                              format={'DD/MM/YYYY'}
-                              className="border border-input placeholder-placeholder py-2 px-3 text-base leading-[19.5px] font-medium font-montserrat"
-                              onChange={(_, dateString) =>
-                                 setEffectiveAndExpirationDate((prev) => ({
-                                    ...prev,
-                                    effectiveDate: {
-                                       date: dateString,
-                                       time: prev.effectiveDate.time,
-                                    },
-                                 }))
-                              }
-                           />
-                           <DatePicker
-                              picker="time"
-                              placeholder="hh:mm:ss"
-                              className="border border-input placeholder-placeholder py-2 px-3 text-base leading-[19.5px] font-medium font-montserrat"
-                              onChange={(_, dateString) =>
-                                 setEffectiveAndExpirationDate((prev) => ({
-                                    ...prev,
-                                    effectiveDate: {
-                                       date: prev.effectiveDate.date,
-                                       time: dateString,
-                                    },
-                                 }))
-                              }
-                           />
-                        </ConfigProvider>
+                        <DatePicker
+                           picker="date"
+                           placeholder="dd/mm/yy"
+                           format={'DD/MM/YYYY'}
+                           className="border border-input placeholder-placeholder py-2 px-3 text-base leading-[19.5px] font-medium font-montserrat"
+                           onChange={(_, dateString) =>
+                              setEffectiveAndExpirationDate((prev) => ({
+                                 ...prev,
+                                 effectiveDate: {
+                                    date: dateString,
+                                    time: prev.effectiveDate.time,
+                                 },
+                              }))
+                           }
+                        />
+                        <DatePicker
+                           picker="time"
+                           placeholder="hh:mm:ss"
+                           className="border border-input placeholder-placeholder py-2 px-3 text-base leading-[19.5px] font-medium font-montserrat"
+                           onChange={(_, dateString) =>
+                              setEffectiveAndExpirationDate((prev) => ({
+                                 ...prev,
+                                 effectiveDate: {
+                                    date: prev.effectiveDate.date,
+                                    time: dateString,
+                                 },
+                              }))
+                           }
+                        />
                      </div>
                   </div>
                   <div className="flex items-start flex-col justify-center">

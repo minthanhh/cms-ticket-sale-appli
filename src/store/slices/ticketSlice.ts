@@ -2,23 +2,43 @@ import { db } from '@/configs';
 import { ITicketPackage } from '@/types';
 import { SerializedError, createAsyncThunk } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
-import { addDoc, collection, doc, getCountFromServer, getDocs, increment, orderBy, query, updateDoc} from 'firebase/firestore'
+import { addDoc, collection, doc, getCountFromServer, getDocs, orderBy, query, updateDoc, writeBatch} from 'firebase/firestore'
 
 interface TicketState {
     listTicketPackage: ITicketPackage[],
     isLoading: boolean,
-    error: SerializedError | null
+    error: SerializedError | null,
 }
 
 const initialState: TicketState = {
     listTicketPackage: [],
     isLoading: false,
-    error: null
+    error: null,
 }
 
 const randomBookingCode = (): Uppercase<string> => {
     return ('ALT' + (Math.floor(Math.random() * 90000000) + 10000000)).toUpperCase() as Uppercase<string>
 }
+
+const randomTicketNumber = () => {
+    const min = 1;
+    const max = Math.pow(10, 12);
+    const randomNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+    return randomNumber;
+}
+
+const randomGate = (): string => {
+    const min = 1;
+    const max = 5;
+    const randomNumber = Math.random();
+    if (randomNumber < 0.2) {
+      return "-";
+    } else { 
+      const randomNum = Math.floor(Math.random() * (max - min + 1)) + min;
+      return `Cổng ${randomNum}`;
+    }
+}
+
 
 export const addTicketPackage = createAsyncThunk('tickets/addTicketPackage', async (data: ITicketPackage, thunk) => {
     try {
@@ -26,22 +46,29 @@ export const addTicketPackage = createAsyncThunk('tickets/addTicketPackage', asy
         const querySnapShot = await getDocs(coll)
         const snapshot = await getCountFromServer(coll)
         let stt: number = 1
-        const bookingCode = randomBookingCode()
+
+        const newData = {
+            ...data,
+            usageStatus: 'notUsedYet',
+            bookingCode: randomBookingCode(),
+            ticketNumber: randomTicketNumber(),
+            checkInGate:  randomGate(),
+            ticketTypeName: 'Vé cổng',
+            checkTicket: false,
+        }
 
         if (querySnapShot.empty) {
-            await addDoc(collection(db, 'ticketPackages'), { ...data, bookingCode,  stt })
+            await addDoc(collection(db, 'ticketPackages'), { ...newData, stt })
         } else {
-            const lastTicket = querySnapShot.docs[querySnapShot.docs.length - 1];
-            const lastStt = lastTicket.data().stt;
             stt = snapshot.data().count + 1
-            await addDoc(collection(db, 'ticketPackages'), { ...data, bookingCode, stt: increment(lastStt + 1) })
+            await addDoc(collection(db, 'ticketPackages'), { ...newData, stt })
         }
-        return { ...data, bookingCode, stt }
+        return { ...newData, stt }
     } catch (err) {
         return thunk.rejectWithValue(err)
     }
 })
-
+    
 export const updateTicPackage = createAsyncThunk('tickets/updateTicPackage', async (data: ITicketPackage, thunk) => {
     try {
         const ref = doc(db, 'ticketPackages', data.id!)
@@ -62,6 +89,30 @@ export const getAllTicketPackage = createAsyncThunk('tickets/getAllTicketPackage
         return thunk.rejectWithValue(err)
     }
 })
+
+export const checkTickets = createAsyncThunk('tickets/checkTickets', async (_, thunk) => {
+    try {
+        const coll = collection(db, 'ticketPackages')
+        const querySnapshot = await getDocs(coll)
+        const batch = writeBatch(db)
+        let data: ITicketPackage[] = [];
+
+        querySnapshot.forEach(async (document) => {
+            batch.update(doc(db, 'ticketPackages', document.id), {
+                checkTicket: true
+            })
+        })
+
+        await batch.commit().then(() => {
+            data = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as ITicketPackage))
+        })
+
+        return data
+    } catch (err) {
+        return thunk.rejectWithValue(err)
+    }
+})
+
 
 const ticketSlice = createSlice({
     name: 'ticket',
@@ -105,6 +156,20 @@ const ticketSlice = createSlice({
         builder.addCase(updateTicPackage.rejected, (state, action) => {
             state.error = action.error
             state.isLoading = false
+        })
+
+        builder.addCase(checkTickets.pending, (state, action) => {
+            state.isLoading = true
+        })
+        builder.addCase(checkTickets.rejected, (state, action) => {
+            state.isLoading = false
+            state.error = action.error
+        })
+        builder.addCase(checkTickets.fulfilled, (state, action) => {
+            if (action.payload) {
+                state.listTicketPackage = action.payload
+                state.isLoading = false
+            }
         })
     }
 })

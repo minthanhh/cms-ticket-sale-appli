@@ -1,7 +1,16 @@
 import { Heading } from '@/components';
+import { useAppDispatch } from '@/hooks/storeHooks';
 import { NavLink, Outlet } from 'react-router-dom';
+import { useEffect } from 'react';
+import { getAllTicketPackage } from '@/store/slices/ticketSlice';
 
 const ManageTicket = () => {
+   const dispatch = useAppDispatch();
+
+   useEffect(() => {
+      dispatch(getAllTicketPackage());
+   }, [dispatch]);
+
    return (
       <div className="w-full h-[calc(100%_-_32px)] bg-white rounded-3xl shadow-md overflow-hidden mb-[32px] p-6">
          <Heading title="Quản lý vé" />

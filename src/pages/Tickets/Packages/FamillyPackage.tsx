@@ -16,9 +16,11 @@ import { exportToCSV } from '@/helpers';
 import { startUsingTicket } from '@/store/slices/ticketSlice';
 import { useSearchParams } from 'react-router-dom';
 import useGlobalFilter from '@/hooks/useGlobalFilter';
+import dayjs from 'dayjs';
 
 const FamillyPackage = () => {
    const dispatch = useAppDispatch();
+   const [searchParams] = useSearchParams();
    const { listTicketPackage } = useAppSelector(
       (state: RootState) => state.ticket
    );
@@ -28,8 +30,15 @@ const FamillyPackage = () => {
       Array(dataTable.length).fill(false)
    );
 
-   const { filteredData, globalSearch, setSearchText, searchText } =
-      useGlobalFilter(dataTable);
+   // const [filterData, setFilterData] = useState<ITicketPackage[]>([]);
+
+   const {
+      filteredData,
+      globalSearch,
+      setSearchText,
+      searchText,
+      setFilteredData,
+   } = useGlobalFilter(dataTable);
 
    const columns: TableColumnsType<ITicketPackage> = [
       {
@@ -121,6 +130,36 @@ const FamillyPackage = () => {
          },
       },
    ];
+
+   useEffect(() => {
+      const obj: any = {};
+      const format = 'DD/MM/YYYY';
+
+      searchParams.forEach((value, key) => {
+         if (value === '') return;
+         Object.assign(obj, { [key]: value });
+      });
+
+      if (obj) {
+         const filteredData = dataTable.filter((i) => {
+            const start = dayjs(obj.from, format).date();
+            const end = dayjs(obj.to, format).date();
+            const day = dayjs(i.effectiveDate.date, format).date();
+
+            return (
+               i.usageStatus === obj.usageStatus ||
+               (day >= start && day <= end) ||
+               i.checkInGate === obj.gateOne ||
+               i.checkInGate === obj.gateTwo ||
+               i.checkInGate === obj.gateThree ||
+               i.checkInGate === obj.gateFour ||
+               i.checkInGate === obj.gateFine
+            );
+         });
+
+         setFilteredData(filteredData);
+      }
+   }, [searchParams, dataTable, setFilteredData]);
 
    useEffect(() => {
       const familyPackage = listTicketPackage.filter(

@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks';
 import { onCloseModalFillter } from '@/store/slices/modalAddTickets';
 import Button from '../Button/Button';
 import HeadingModal from './HeadingModal';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const ModalFilter = () => {
    const initialCheckInGateState = {
@@ -17,6 +17,15 @@ const ModalFilter = () => {
       gateThree: '',
       gateFour: '',
       gateFine: '',
+   };
+
+   const initialCheckedInGateState = {
+      allGate: false,
+      gateOne: false,
+      gateTwo: false,
+      gateThree: false,
+      gateFour: false,
+      gateFine: false,
    };
 
    const initialFilterDate = {
@@ -29,31 +38,39 @@ const ModalFilter = () => {
       (state: RootState) => state.modal
    );
 
-   const navigate = useNavigate();
    const [isChecked, setIsChecked] = useState(initialCheckInGateState);
    const [isCheckedRadio, setIsCheckedRadio] = useState('');
    const [filter, setFilter] = useState(initialFilterDate);
    const [disabledCheckBox, setDisabledCheckBox] = useState(false);
+   const [checked, setChecked] = useState(initialCheckedInGateState);
+   const [, setSearchParams] = useSearchParams();
 
    const handleChangeCheckInGate = (e: CheckboxChangeEvent) => {
       const { id, value, checked } = e.target;
 
-      if (id === 'allGate' && checked) {
-         setDisabledCheckBox((value) => !value);
-         setIsChecked({
-            allGate: value,
-            gateFine: '',
-            gateFour: '',
-            gateOne: '',
-            gateThree: '',
-            gateTwo: '',
-         });
+      if (checked) {
+         if (id === 'allGate') {
+            setDisabledCheckBox(true);
+            setChecked(initialCheckedInGateState);
+            setIsChecked({
+               allGate: value,
+               gateFine: '',
+               gateFour: '',
+               gateOne: '',
+               gateThree: '',
+               gateTwo: '',
+            });
+         } else {
+            setIsChecked((prev) => ({ ...prev, [id!]: value }));
+            setChecked((prev) => ({ ...prev, [id!]: checked }));
+         }
       } else {
          if (id === 'allGate') {
-            setIsChecked((prev) => ({
-               ...prev,
-               [id!]: id === 'allGate' ? '' : value,
-            }));
+            setDisabledCheckBox(false);
+            setIsChecked((prev) => ({ ...prev, [id!]: '' }));
+         } else {
+            setChecked((prev) => ({ ...prev, [id!]: checked }));
+            setIsChecked((prev) => ({ ...prev, [id!]: '' }));
          }
       }
    };
@@ -67,11 +84,10 @@ const ModalFilter = () => {
       e.preventDefault();
 
       dispatch(onCloseModalFillter());
-      navigate('/manage-tickets', {
-         state: {
-            ...filter,
-            status: isCheckedRadio,
-         },
+      setSearchParams({
+         ...filter,
+         usageStatus: isCheckedRadio,
+         ...isChecked,
       });
    };
 
@@ -194,10 +210,11 @@ const ModalFilter = () => {
                      >
                         <Checkbox
                            id="gateOne"
-                           value={'gateOne'}
+                           value={'Cổng 1'}
                            className="mr-2"
                            onChange={handleChangeCheckInGate}
                            disabled={disabledCheckBox}
+                           checked={checked.gateOne}
                         />
                         Cổng 1
                      </label>
@@ -207,10 +224,11 @@ const ModalFilter = () => {
                      >
                         <Checkbox
                            id="gateTwo"
-                           value={'gateTwo'}
+                           value={'Cổng 2'}
                            className="mr-2"
                            onChange={handleChangeCheckInGate}
                            disabled={disabledCheckBox}
+                           checked={checked.gateTwo}
                         />
                         Cổng 2
                      </label>
@@ -220,10 +238,11 @@ const ModalFilter = () => {
                      >
                         <Checkbox
                            id="gateThree"
-                           value={'gateThree'}
+                           value={'Cổng 3'}
                            className="mr-2"
                            onChange={handleChangeCheckInGate}
                            disabled={disabledCheckBox}
+                           checked={checked.gateThree}
                         />
                         Cổng 3
                      </label>
@@ -233,10 +252,11 @@ const ModalFilter = () => {
                      >
                         <Checkbox
                            id="gateFour"
-                           value="gateFour"
+                           value={'Cổng 4'}
                            className="mr-2"
                            onChange={handleChangeCheckInGate}
                            disabled={disabledCheckBox}
+                           checked={checked.gateFour}
                         />
                         Cổng 4
                      </label>
@@ -246,10 +266,11 @@ const ModalFilter = () => {
                      >
                         <Checkbox
                            id="gateFine"
-                           value="gateFine"
+                           value={'Cổng 5'}
                            className="mr-2"
                            onChange={handleChangeCheckInGate}
                            disabled={disabledCheckBox}
+                           checked={checked.gateFine}
                         />
                         Cổng 5
                      </label>

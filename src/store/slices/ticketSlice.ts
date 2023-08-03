@@ -2,7 +2,8 @@ import { db } from '@/configs';
 import { ITicketPackage } from '@/types';
 import { SerializedError, createAsyncThunk } from '@reduxjs/toolkit';
 import { createSlice } from '@reduxjs/toolkit';
-import { addDoc, collection, doc, getCountFromServer, getDocs, orderBy, query, updateDoc, writeBatch} from 'firebase/firestore'
+import dayjs from 'dayjs';
+import { addDoc, collection, doc, getCountFromServer, getDocs, orderBy, query, updateDoc, where, writeBatch} from 'firebase/firestore'
 
 interface TicketState {
     listTicketPackage: ITicketPackage[],
@@ -72,7 +73,7 @@ export const addTicketPackage = createAsyncThunk('tickets/addTicketPackage', asy
 export const updateTicPackage = createAsyncThunk('tickets/updateTicPackage', async (data: ITicketPackage, thunk) => {
     try {
         const ref = doc(db, 'ticketPackages', data.id!)
-        await updateDoc(ref, {...data})
+        await updateDoc(ref, {...data })
         return { ...data }
     } catch (err) {
         return thunk.rejectWithValue(err)
@@ -93,8 +94,10 @@ export const getAllTicketPackage = createAsyncThunk('tickets/getAllTicketPackage
 export const checkTickets = createAsyncThunk('tickets/checkTickets', async (_, thunk) => {
     try {
         const coll = collection(db, 'ticketPackages')
-        const querySnapshot = await getDocs(coll)
+        const q = query(coll, orderBy('stt', 'asc'))
+        const querySnapshot = await getDocs(q)
         const batch = writeBatch(db)
+        let check: string = ''
         let data: ITicketPackage[] = [];
 
         querySnapshot.forEach(async (document) => {
@@ -103,11 +106,39 @@ export const checkTickets = createAsyncThunk('tickets/checkTickets', async (_, t
             })
         })
 
-        await batch.commit().then(() => {
+        await batch.commit().then(() => check = 'success')
+
+        if (check === 'success') {
             data = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as ITicketPackage))
-        })
+        }
 
         return data
+    } catch (err) {
+        return thunk.rejectWithValue(err)
+    }
+})
+
+
+export const updateEndDateTicket = createAsyncThunk('tickets/updateEndDateTicket', async (data: ITicketPackage, thunk) => {
+    try {
+        const ref = doc(db, "ticketPackages", data.id!);
+        await updateDoc(ref, { ...data })
+        return { ...data }
+    } catch (err) {
+        return thunk.rejectWithValue(err)
+    }
+})
+
+
+export const startUsingTicket = createAsyncThunk('tickets/startUsingTicket', async (id: string, thunk) => {
+    try {
+        const dateUsed = dayjs().format('DD/MM/YYYY');
+        const ref = doc(db, 'ticketPackages', id)
+        await updateDoc(ref, {
+            usageStatus: 'used',
+            dateUsed: dateUsed
+        })
+        return { id, dateUsed: dateUsed }
     } catch (err) {
         return thunk.rejectWithValue(err)
     }
@@ -171,6 +202,51 @@ const ticketSlice = createSlice({
                 state.isLoading = false
             }
         })
+
+
+        builder.addCase(updateEndDateTicket.pending, (state, _) => {
+            state.isLoading = true
+        })
+
+        builder.addCase(updateEndDateTicket.rejected, (state, action) => {
+            state.isLoading = false
+            state.error = action.error
+        })
+
+        builder.addCase(updateEndDateTicket.fulfilled, (state, action) => {
+            const { id } = action.payload
+
+            state.isLoading = false
+            state.listTicketPackage = [...state.listTicketPackage].map((i) => {
+                if (i.id === id) {
+                    return action.payload
+                }
+                return i
+            })
+        })
+
+
+        builder.addCase(startUsingTicket.pending, (state, _) => {
+            state.isLoading = true
+        })
+
+        builder.addCase(startUsingTicket.rejected, (state, action) => {
+            state.isLoading = false
+            state.error = action.error
+        })
+
+        builder.addCase(startUsingTicket.fulfilled, (state, action) => {
+            const { id, dateUsed } = action.payload
+
+            state.isLoading = false
+            state.listTicketPackage = [...state.listTicketPackage].map((i) => {
+                if (i.id === id) {
+                    return { ...i, usageStatus: 'used', dateUsed }
+                }
+                return i
+            })
+        })
+
     }
 })
 

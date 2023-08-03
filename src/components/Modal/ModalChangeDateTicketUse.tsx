@@ -1,15 +1,49 @@
 import { DatePicker, Modal } from 'antd';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import dayjs from 'dayjs';
+import { toast } from 'react-toastify';
+
 import { RootState } from '@/store';
 import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks';
 import { onCloseModalChangeDateTicketUse } from '@/store/slices/modalAddTickets';
+import { ITicketPackage } from '@/types';
+
 import HeadingModal from './HeadingModal';
 import Button from '../Button/Button';
+import { updateEndDateTicket } from '@/store/slices/ticketSlice';
 
 const ModalChangeTicketDay = () => {
    const dispatch = useAppDispatch();
+   const [searchParams, setSearchParams] = useSearchParams();
+   const [ticketPackage, setTicketPacket] = useState<ITicketPackage | null>(
+      null
+   );
+   const { listTicketPackage, isLoading } = useAppSelector(
+      (state: RootState) => state.ticket
+   );
    const { isOpenModalChangeDateTicketUse } = useAppSelector(
       (state: RootState) => state.modal
    );
+
+   useEffect(() => {
+      const id = searchParams.get('id');
+
+      if (id) {
+         const singleTicket = listTicketPackage.find((i) => i.id === id)!;
+         setTicketPacket(singleTicket);
+      } else {
+         setTicketPacket(null);
+      }
+   }, [searchParams, listTicketPackage]);
+
+   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+
+      dispatch(updateEndDateTicket(ticketPackage as ITicketPackage))
+         .then(() => toast.success('Vé đã được cập nhật hạn sử dụng mới.'))
+         .catch(() => toast.error('Cập nhật không thành công!'));
+   };
 
    return (
       <Modal
@@ -20,7 +54,7 @@ const ModalChangeTicketDay = () => {
       >
          <HeadingModal title="Đổi ngày sử dụng vé" />
 
-         <form>
+         <form onSubmit={handleSubmit}>
             <table>
                <tbody>
                   <tr>
@@ -31,19 +65,20 @@ const ModalChangeTicketDay = () => {
                      </td>
                      <td>
                         <span className="mb-6 font-montserrat leading-[19.5px] font-medium text-base block">
-                           PKG20210502
+                           {ticketPackage?.ticketNumber}
                         </span>
                      </td>
                   </tr>
                   <tr>
                      <td>
                         <span className="mb-6 font-montserrat leading-[26px] font-semibold text-base mr-[78px] block">
-                           Số vé
+                           Tên vé/gói
                         </span>
                      </td>
                      <td>
                         <span className="mb-6 font-montserrat leading-[19.5px] font-medium text-base block">
-                           Vé cổng - Gói sự kiện
+                           {ticketPackage?.ticketTypeName} -{' '}
+                           {ticketPackage?.ticketPackageName}
                         </span>
                      </td>
                   </tr>
@@ -66,7 +101,26 @@ const ModalChangeTicketDay = () => {
                         </span>
                      </td>
                      <td>
-                        <DatePicker picker="date" format={'DD/MM/YYYY'} />
+                        <DatePicker
+                           picker="date"
+                           format={'DD/MM/YYYY'}
+                           onChange={(_, date) => {
+                              setTicketPacket(
+                                 (prev) =>
+                                    ({
+                                       ...prev,
+                                       expirationDate: {
+                                          time: prev?.expirationDate.time,
+                                          date: date,
+                                       },
+                                    } as ITicketPackage)
+                              );
+                           }}
+                           value={dayjs(
+                              ticketPackage?.expirationDate.date,
+                              'DD/MM/YYYY'
+                           )}
+                        />
                      </td>
                   </tr>
                </tbody>
@@ -76,11 +130,19 @@ const ModalChangeTicketDay = () => {
                <Button
                   title="Huỷ"
                   outline
-                  onClick={() => dispatch(onCloseModalChangeDateTicketUse())}
+                  onClick={() => {
+                     dispatch(onCloseModalChangeDateTicketUse());
+                     setSearchParams('');
+                  }}
                   className="w-[160px]"
                   type="button"
                />
-               <Button title="Lưu" className="w-[160px]" type="submit" />
+               <Button
+                  title="Lưu"
+                  className="w-[160px]"
+                  type="submit"
+                  disabled={isLoading}
+               />
             </div>
          </form>
       </Modal>

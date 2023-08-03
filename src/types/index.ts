@@ -34,5 +34,6 @@ export interface ITicketPackage {
     checkTicket?: boolean
     ticketTypeName?: string
     usageStatus?: string
+    dateUsed?: string 
 }
 

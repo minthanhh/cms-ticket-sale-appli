@@ -6,29 +6,42 @@ import { BsThreeDotsVertical } from 'react-icons/bs';
 import { Button, Status, TableSearch } from '@/components';
 import { ITicketPackage } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks';
-import { onOpenModalFillter } from '@/store/slices/modalAddTickets';
+import {
+   onOpenModalChangeDateTicketUse,
+   onOpenModalFillter,
+} from '@/store/slices/modalAddTickets';
 import { BiSolidLeftArrow, BiSolidRightArrow } from 'react-icons/bi';
 import { RootState } from '@/store';
 import { exportToCSV } from '@/helpers';
+import { startUsingTicket } from '@/store/slices/ticketSlice';
+import { useSearchParams } from 'react-router-dom';
+import useGlobalFilter from '@/hooks/useGlobalFilter';
 
 const FamillyPackage = () => {
    const dispatch = useAppDispatch();
    const { listTicketPackage } = useAppSelector(
       (state: RootState) => state.ticket
    );
-
    const [dataTable, setDataTable] = useState<ITicketPackage[]>([]);
-   const [searchText, setSearchText] = useState<string>('');
-   const [filteredData, setFilterdData] = useState<ITicketPackage[]>([]);
+   const [, setSearchParams] = useSearchParams();
+   const [toggleTooltip, setTooltip] = useState(
+      Array(dataTable.length).fill(false)
+   );
+
+   const { filteredData, globalSearch, setSearchText, searchText } =
+      useGlobalFilter(dataTable);
 
    const columns: TableColumnsType<ITicketPackage> = [
       {
          title: 'STT',
          dataIndex: 'stt',
          key: 'stt',
+         render(value, record, index) {
+            return '' + ++index;
+         },
       },
       {
-         title: 'Booking code',
+         title: 'Mã gói',
          dataIndex: 'bookingCode',
          key: 'bookingCode',
       },
@@ -45,13 +58,16 @@ const FamillyPackage = () => {
       },
       {
          title: 'Ngày sử dụng',
-         dataIndex: 'date',
-         key: 'date',
+         dataIndex: 'dateUsed',
+         key: 'dateUsed',
       },
       {
          title: 'Ngày xuất vé',
-         dataIndex: 'tiketIssueDate',
-         key: 'tiketIssueDate',
+         dataIndex: 'effectiveDate',
+         key: 'effectiveDate',
+         render(value, _) {
+            return `${value.date}`;
+         },
       },
       {
          title: 'Cổng check - in',
@@ -62,8 +78,43 @@ const FamillyPackage = () => {
          dataIndex: 'tooltip',
          key: 'tooltip',
          render(value, record, index) {
+            const handleClick = (index: number) => {
+               setTooltip((prevList) => {
+                  const newTooltipList = [...prevList];
+                  newTooltipList[index] = !newTooltipList[index];
+                  return newTooltipList;
+               });
+            };
+
             return record.usageStatus === 'notUsedYet' ? (
-               <BsThreeDotsVertical />
+               <>
+                  <BsThreeDotsVertical
+                     size={24}
+                     className="cursor-pointer"
+                     onClick={() => handleClick(index)}
+                  />
+                  {toggleTooltip[index] ? (
+                     <div className="bg-[#FFD2A8] shadow-md absolute top-0 right-full overflow-hidden flex items-center flex-col justify-center w-max rounded-lg">
+                        <button
+                           className="px-3 py-2 w-full hover:bg-[#caa786] default-animate"
+                           onClick={() =>
+                              dispatch(startUsingTicket(record.id as string))
+                           }
+                        >
+                           Sử dụng vé
+                        </button>
+                        <button
+                           onClick={() => {
+                              dispatch(onOpenModalChangeDateTicketUse());
+                              setSearchParams({ id: record.id as string });
+                           }}
+                           className="px-3 w-full hover:bg-[#caa786] py-2 default-animate"
+                        >
+                           Đổi ngày sử dụng
+                        </button>
+                     </div>
+                  ) : null}
+               </>
             ) : (
                ''
             );
@@ -77,14 +128,6 @@ const FamillyPackage = () => {
       );
       setDataTable(familyPackage);
    }, [listTicketPackage]);
-
-   const globalSearch = () => {
-      const filteredData = dataTable.filter((value) =>
-         value.bookingCode?.toLowerCase().includes(searchText.toLowerCase())
-      );
-
-      setFilterdData(filteredData);
-   };
 
    return (
       <>

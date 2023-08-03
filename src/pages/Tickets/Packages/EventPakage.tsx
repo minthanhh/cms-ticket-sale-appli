@@ -13,13 +13,17 @@ import { RootState } from '@/store';
 import { ITicketPackage } from '@/types';
 import { exportToCSV } from '@/helpers';
 import { BsThreeDotsVertical } from 'react-icons/bs';
+import { useSearchParams } from 'react-router-dom';
+import { startUsingTicket } from '@/store/slices/ticketSlice';
+import useGlobalFilter from '@/hooks/useGlobalFilter';
 
 const EvenPackage = () => {
    const dispatch = useAppDispatch();
+   const [, setSearchParams] = useSearchParams();
    const [dataTable, setDataTable] = useState<ITicketPackage[]>([]);
-   const [searchText, setSearchText] = useState<string>('');
+   const { filteredData, globalSearch, setSearchText, searchText } =
+      useGlobalFilter(dataTable);
    const [toggleTooltip, setTooltip] = useState(false);
-   const [filteredData, setFilterdData] = useState<ITicketPackage[]>([]);
    const { listTicketPackage } = useAppSelector(
       (state: RootState) => state.ticket
    );
@@ -29,9 +33,12 @@ const EvenPackage = () => {
          title: 'STT',
          dataIndex: 'stt',
          key: 'stt',
+         render(value, record, index) {
+            return '' + ++index;
+         },
       },
       {
-         title: 'Booking code',
+         title: 'Mã gói',
          dataIndex: 'bookingCode',
          key: 'bookingCode',
       },
@@ -48,8 +55,8 @@ const EvenPackage = () => {
       },
       {
          title: 'Ngày sử dụng',
-         dataIndex: 'date',
-         key: 'date',
+         dataIndex: 'dateUsed',
+         key: 'dateUsed',
       },
       {
          title: 'Ngày xuất vé',
@@ -77,13 +84,19 @@ const EvenPackage = () => {
                   />
                   {toggleTooltip ? (
                      <div className="bg-[#FFD2A8] shadow-md absolute top-0 right-full overflow-hidden flex items-center flex-col justify-center w-max rounded-lg">
-                        <button className="px-3 py-2 w-full hover:bg-[#caa786] default-animate">
+                        <button
+                           className="px-3 py-2 w-full hover:bg-[#caa786] default-animate"
+                           onClick={() =>
+                              dispatch(startUsingTicket(record.id as string))
+                           }
+                        >
                            Sử dụng vé
                         </button>
                         <button
-                           onClick={() =>
-                              dispatch(onOpenModalChangeDateTicketUse())
-                           }
+                           onClick={() => {
+                              dispatch(onOpenModalChangeDateTicketUse());
+                              setSearchParams({ id: record.id as string });
+                           }}
                            className="px-3 w-full hover:bg-[#caa786] py-2 default-animate"
                         >
                            Đổi ngày sử dụng
@@ -104,14 +117,6 @@ const EvenPackage = () => {
       );
       setDataTable(eventPackage);
    }, [listTicketPackage]);
-
-   const globalSearch = () => {
-      const filteredData = dataTable.filter((value) =>
-         value.bookingCode?.toLowerCase().includes(searchText.toLowerCase())
-      );
-
-      setFilterdData(filteredData);
-   };
 
    return (
       <>

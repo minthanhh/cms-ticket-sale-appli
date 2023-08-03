@@ -12,6 +12,7 @@ import ModalUpdateTicketPakage from './components/Modal/ModalUpdateTicketPakage'
 import ModalFilter from './components/Modal/ModalFilter';
 import ListOfTicketPackages from './pages/Settings/ListOfTicketPackages';
 import ModalChangeTicketDay from './components/Modal/ModalChangeDateTicketUse';
+import { Toast } from './components';
 
 const App = () => {
    return (
@@ -21,6 +22,7 @@ const App = () => {
             <ModalAddTickets />
             <ModalUpdateTicketPakage />
             <ModalFilter />
+            <Toast />
             <Routes>
                <Route Component={DashboardLayout}>
                   <Route path="/" Component={Dashboard} />

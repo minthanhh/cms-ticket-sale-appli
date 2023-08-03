@@ -1,17 +1,18 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { DatePicker, Input, Modal, Select, Checkbox } from 'antd';
+import { IoIosArrowDown } from 'react-icons/io';
+import dayjs from 'dayjs';
+import { toast } from 'react-toastify';
 
 import { RootState } from '@/store';
+import { ITicketPackage } from '@/types';
 import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks';
 import { onCloseModalUpdateTicketPackage } from '@/store/slices/modalAddTickets';
-import { ITicketPackage } from '@/types';
-import HeadingModal from './HeadingModal';
-import { IoIosArrowDown } from 'react-icons/io';
-import Button from '../Button/Button';
-import dayjs from 'dayjs';
-import { CheckboxChangeEvent } from 'antd/es/checkbox';
 import { updateTicPackage } from '@/store/slices/ticketSlice';
+import { CheckboxChangeEvent } from 'antd/es/checkbox';
+import HeadingModal from './HeadingModal';
+import Button from '../Button/Button';
 
 const ModalUpdateTicketPakage = () => {
    const dispatch = useAppDispatch();
@@ -108,7 +109,10 @@ const ModalUpdateTicketPakage = () => {
          };
       }
 
-      dispatch(updateTicPackage(updatedData as ITicketPackage));
+      dispatch(updateTicPackage(updatedData as ITicketPackage))
+         .unwrap()
+         .then(() => toast.success('Gói vé được cập nhật thành công'))
+         .catch(() => toast.error('Đã xảy ra lỗi không thể cập nhật!'));
    };
 
    return (

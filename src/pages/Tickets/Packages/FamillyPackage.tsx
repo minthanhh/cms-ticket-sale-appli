@@ -20,12 +20,11 @@ import dayjs from 'dayjs';
 
 const FamillyPackage = () => {
    const dispatch = useAppDispatch();
-   const [searchParams] = useSearchParams();
+   const [searchParams, setSearchParams] = useSearchParams();
    const { listTicketPackage } = useAppSelector(
       (state: RootState) => state.ticket
    );
    const [dataTable, setDataTable] = useState<ITicketPackage[]>([]);
-   const [, setSearchParams] = useSearchParams();
    const [toggleTooltip, setTooltip] = useState(
       Array(dataTable.length).fill(false)
    );

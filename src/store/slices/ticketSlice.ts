@@ -97,8 +97,6 @@ export const checkTickets = createAsyncThunk('tickets/checkTickets', async (_, t
         const q = query(coll, orderBy('stt', 'asc'))
         const querySnapshot = await getDocs(q)
         const batch = writeBatch(db)
-        let check: string = ''
-        let data: ITicketPackage[] = [];
 
         querySnapshot.forEach(async (document) => {
             batch.update(doc(db, 'ticketPackages', document.id), {
@@ -106,13 +104,9 @@ export const checkTickets = createAsyncThunk('tickets/checkTickets', async (_, t
             })
         })
 
-        await batch.commit().then(() => check = 'success')
+        await batch.commit()
 
-        if (check === 'success') {
-            data = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as ITicketPackage))
-        }
-
-        return data
+        return  querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), checkTicket: true } as ITicketPackage))
     } catch (err) {
         return thunk.rejectWithValue(err)
     }

@@ -13,6 +13,7 @@ import { addTicketPackage } from '@/store/slices/ticketSlice';
 import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks';
 import Button from '../Button/Button';
 import HeadingModal from './HeadingModal';
+import { toast } from 'react-toastify';
 
 const ModalAddTickets = () => {
    const { isOpenModalAddTickets } = useSelector(
@@ -163,11 +164,12 @@ const ModalAddTickets = () => {
 
       if (newTicketPackage) {
          dispatch(addTicketPackage(newTicketPackage))
-            .unwrap()
             .then(() => {
+               toast.success('Đã thêm thành công gói vé');
                resetForm();
             })
             .catch((err: SerializedError) => {
+               toast.success('Đã xảy ra lỗi vui lòng kiểm tra');
                resetForm();
             });
       }

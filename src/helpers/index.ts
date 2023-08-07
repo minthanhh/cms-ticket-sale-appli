@@ -1,4 +1,5 @@
 import { ITicketPackage } from "@/types";
+import dayjs from "dayjs";
 import { utils, writeFile } from "xlsx";
 
 
@@ -49,3 +50,44 @@ export const formatToCurrencyVietNam = (value: string) => {
 
     writeFile(wb, 'list-of-package-data.xlsx');
  }
+
+
+ function getWeekDates(year: number, month: number, week: number) {
+   const firstDayOfMonth = dayjs(`${year}-${month + 1}-01`);
+   const startOfWeek = firstDayOfMonth.add(week - 1, 'week');
+   const endOfWeek = startOfWeek.add(6, 'day');
+   return { startOfWeek, endOfWeek };
+}
+
+export const getWeeksInMonth = (month?: number) => {
+   const currentDate = new Date();
+   const lastDay = dayjs(
+      `${currentDate.getFullYear()}-${month ? month : currentDate.getMonth() ||  + 1}`
+   )
+      .endOf('month')
+      .date();
+   const weeks = Math.ceil(lastDay / 7);
+   let array: string[] = [];
+
+   Array(weeks)
+   .fill({})
+   .forEach((_, idx) => {
+      ++idx;
+      const weekDates = getWeekDates(
+         currentDate.getFullYear(),
+         month ? month : currentDate.getMonth(),
+         idx
+      );
+
+      array.push(
+         `${weekDates.startOfWeek.format(
+            'DD/MM'
+         )} - ${weekDates.endOfWeek.format('DD/MM')}`
+      );
+   });
+   return array
+}
+
+
+
+

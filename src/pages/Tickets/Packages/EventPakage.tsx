@@ -16,13 +16,19 @@ import { BsThreeDotsVertical } from 'react-icons/bs';
 import { useSearchParams } from 'react-router-dom';
 import { startUsingTicket } from '@/store/slices/ticketSlice';
 import useGlobalFilter from '@/hooks/useGlobalFilter';
+import dayjs from 'dayjs';
 
 const EvenPackage = () => {
    const dispatch = useAppDispatch();
-   const [, setSearchParams] = useSearchParams();
+   const [searchParams, setSearchParams] = useSearchParams();
    const [dataTable, setDataTable] = useState<ITicketPackage[]>([]);
-   const { filteredData, globalSearch, setSearchText, searchText } =
-      useGlobalFilter(dataTable);
+   const {
+      filteredData,
+      globalSearch,
+      setSearchText,
+      searchText,
+      setFilteredData,
+   } = useGlobalFilter(dataTable);
    const [toggleTooltip, setTooltip] = useState(false);
    const { listTicketPackage } = useAppSelector(
       (state: RootState) => state.ticket
@@ -110,6 +116,36 @@ const EvenPackage = () => {
          },
       },
    ];
+
+   useEffect(() => {
+      const obj: any = {};
+      const format = 'DD/MM/YYYY';
+
+      searchParams.forEach((value, key) => {
+         if (value === '') return;
+         Object.assign(obj, { [key]: value });
+      });
+
+      if (obj) {
+         const filteredData = dataTable.filter((i) => {
+            const start = dayjs(obj.from, format).date();
+            const end = dayjs(obj.to, format).date();
+            const day = dayjs(i.effectiveDate.date, format).date();
+
+            return (
+               i.usageStatus === obj.usageStatus ||
+               (day >= start && day <= end) ||
+               i.checkInGate === obj.gateOne ||
+               i.checkInGate === obj.gateTwo ||
+               i.checkInGate === obj.gateThree ||
+               i.checkInGate === obj.gateFour ||
+               i.checkInGate === obj.gateFine
+            );
+         });
+
+         setFilteredData(filteredData);
+      }
+   }, [searchParams, dataTable, setFilteredData]);
 
    useEffect(() => {
       const eventPackage = listTicketPackage.filter(

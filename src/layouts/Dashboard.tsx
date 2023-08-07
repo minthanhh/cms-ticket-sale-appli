@@ -1,4 +1,5 @@
 import { Header, Sidebar } from '@/components';
+
 import { Outlet } from 'react-router-dom';
 
 const Dashboard = () => {

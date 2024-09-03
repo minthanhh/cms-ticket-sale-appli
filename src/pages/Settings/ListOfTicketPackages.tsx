@@ -1,187 +1,162 @@
-import { Heading } from '@/components';
-import { useEffect, useMemo, useState } from 'react';
-import Button from '@/components/Button/Button';
-import TableSearch from '@/components/Table/SearchTable';
-import Table, { ColumnsType } from 'antd/es/table';
-import { ITicketPackage } from '@/types';
-import { FiEdit } from 'react-icons/fi';
+import { ClassAttributes, memo, TdHTMLAttributes, ThHTMLAttributes, useCallback, useEffect, useState } from 'react'
+import Table, { ColumnsType } from 'antd/es/table'
+import { ITicket } from '@/types'
+import { FiEdit } from 'react-icons/fi'
+import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks'
+import { RootState } from '@/store'
+import { getTickets } from '@/store/slices/ticketSlice'
+import { AmountUtil } from '@/utilities/amount.util'
+import { JSX } from 'react/jsx-runtime'
+import { Button, Divider, Input, Tag, Typography } from 'antd'
+import { EmptyError, EmptyResult } from '@/components/Empties'
+import { ReloadOutlined } from '@ant-design/icons'
+import { ModalTicket } from '@/components/Modal/ModalTicket'
 
-import Status from '@/components/Status/Status';
-import {
-   onOpenModalAddTickets,
-   onOpenModalUpdateTicketPackage,
-} from '@/store/slices/modalAddTickets';
-import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks';
-import { RootState } from '@/store';
-import { getAllTicketPackage } from '@/store/slices/ticketSlice';
-import { useSearchParams } from 'react-router-dom';
-import { BiSolidLeftArrow, BiSolidRightArrow } from 'react-icons/bi';
-import { exportToCSV } from '@/helpers';
-import useGlobalFilter from '@/hooks/useGlobalFilter';
+type ModalType = 'create' | 'edit'
+
+interface IModalValues {
+    type: ModalType
+    id?: string | undefined
+    open: boolean
+}
+
+const INIT_MODAL_VALUES: IModalValues = {
+    type: 'create',
+    open: false,
+    id: undefined,
+}
 
 const ListOfTicketPackages = () => {
-   const [, setSearchParams] = useSearchParams();
-   const [dataTable, setDataTable] = useState<ITicketPackage[]>([]);
-   const { filteredData, globalSearch, setSearchText, searchText } =
-      useGlobalFilter(dataTable);
+    const dispatch = useAppDispatch()
+    const { tickets, isTicketLoading } = useAppSelector((state: RootState) => state.ticket)
+    const [isError, setIsError] = useState(false)
+    const [modal, setModal] = useState<IModalValues>(INIT_MODAL_VALUES)
 
-   const dispatch = useAppDispatch();
-   const { listTicketPackage } = useAppSelector(
-      (state: RootState) => state.ticket
-   );
+    const onOpen = (type: ModalType, id?: string) => setModal({ open: true, type, id })
+    const onClose = useCallback(() => setModal(INIT_MODAL_VALUES), [])
 
-   useEffect(() => {
-      dispatch(getAllTicketPackage())
-         .then(() => {})
-         .catch((err: any) => console.log(err));
-   }, [dispatch]);
+    const loadTickets = useCallback(() => {
+        dispatch(getTickets()).catch((error) => {
+            console.error(error)
+            setIsError(true)
+        })
+    }, [dispatch])
 
-   useEffect(() => {
-      setDataTable(listTicketPackage);
-   }, [listTicketPackage]);
+    useEffect(() => loadTickets(), [loadTickets])
 
-   const columns = useMemo<ColumnsType<ITicketPackage>>(
-      () => [
-         {
+    const columns: ColumnsType<ITicket> = [
+        {
             title: 'STT',
-            dataIndex: 'stt',
-            key: 'stt',
-         },
-         {
+            width: 10,
+            render: (_value, _record, index) => ++index,
+        },
+        {
+            width: 100,
             title: 'Mã gói',
             dataIndex: 'bookingCode',
             key: 'bookingCode',
-         },
-         {
+        },
+        {
+            width: 250,
             title: 'Tên gói vé',
-            dataIndex: 'ticketPackageName',
-            key: 'ticketPackageName',
-         },
-         {
+            dataIndex: 'ticketName',
+            key: 'ticketName',
+        },
+        {
+            width: 110,
             title: 'Ngày áp dụng',
-            dataIndex: 'effectiveDate',
-            key: 'effectiveDate',
-            render(value, _, index) {
-               return (
-                  <div
-                     key={value + index + 1}
-                     className="flex flex-col items-end"
-                  >
-                     <span className="inline-block">{value.date}</span>
-                     <span className="inline-block">{value.time}</span>
-                  </div>
-               );
-            },
-         },
-         {
+            dataIndex: 'startDateApply',
+            key: 'startDateApply',
+            sorter: true,
+        },
+        {
+            width: 110,
             title: 'Ngày hết hạn',
-            dataIndex: 'expirationDate',
-            key: 'expirationDate',
-            render(value, _, index) {
-               return (
-                  <div
-                     key={value + index + 1}
-                     className="flex flex-col items-end"
-                  >
-                     <span className="inline-block">{value.date}</span>
-                     <span className="inline-block">{value.time}</span>
-                  </div>
-               );
-            },
-         },
-         {
+            dataIndex: 'endDateExpiresIn',
+            key: 'endDateExpiresIn',
+            sorter: true,
+        },
+        {
+            width: 150,
             title: 'Giá vé (VNĐ/Vé)',
-            dataIndex: 'singleTicket',
-            key: 'singleTicket',
-            render(value) {
-               return `${(Number(value) * 1000).toLocaleString('vi-VN')} VNĐ`;
-            },
-         },
-         {
+            dataIndex: 'singlePrice',
+            key: 'singlePrice',
+            render: (singlePrice) => AmountUtil.formatCurrencyToVND(singlePrice, true),
+        },
+        {
+            width: 150,
             title: 'Giá Combo (VNĐ/Combo)',
-            dataIndex: 'comboTicket',
-            key: 'comboTicket',
-            render(value, record) {
-               return value === ''
-                  ? ''
-                  : `${(Number(value) * 1000).toLocaleString('vi-VN')} VNĐ/${
-                       record.quantity
-                    } vé`;
-            },
-         },
-         {
+            dataIndex: 'comboPrice',
+            key: 'comboPrice',
+            render: (comboPrice) => AmountUtil.formatCurrencyToVND(comboPrice, true),
+        },
+        {
+            width: 100,
             title: 'Tình trạng',
             dataIndex: 'status',
             key: 'status',
-            render: Status,
-         },
-         {
+            render: (value: string) => <Tag color={value === 'apply' ? 'blue' : 'red'}>{value.toUpperCase()}</Tag>,
+        },
+        {
+            width: 100,
             dataIndex: 'actions',
             key: 'actions',
-            render: (value, record, index) => {
-               return (
-                  <button
-                     key={index}
-                     className="text-borderButton flex items-center gap-1"
-                     onClick={() => {
-                        setSearchParams(`id=${record.id}`);
-                        dispatch(onOpenModalUpdateTicketPackage());
-                     }}
-                  >
-                     <FiEdit className="w-6 h-6" />
-                     <span className="text-sm leading-[22px] font-medium font-montserrat">
-                        Cập nhật
-                     </span>
-                  </button>
-               );
-            },
-         },
-      ],
-      [dispatch, setSearchParams]
-   );
+            render: (_, record) => (
+                <Button icon={<FiEdit />} onClick={() => onOpen('edit', record.id)}>
+                    Cập nhật
+                </Button>
+            ),
+        },
+    ]
 
-   return (
-      <div className="w-full h-[calc(100%_-_32px)] bg-white rounded-3xl shadow-md overflow-hidden mb-[32px] p-6">
-         <Heading title="Danh sách gói vé" />
+    return (
+        <>
+            <div className="w-full h-[calc(100%_-_32px)] bg-white rounded-3xl shadow-md overflow-hidden mb-[32px] p-4">
+                <Typography.Title level={2}>Danh sách gói vé</Typography.Title>
+                <div className="flex items-center justify-between mb-4">
+                    <Input.Search className="w-1/4" />
+                    <div className="flex items-center gap-2">
+                        <Button htmlType="button">Xuất file (.csv)</Button>
+                        <Button onClick={() => onOpen('create')} htmlType="button" type="primary" className="bg-primary">
+                            Thêm gói vé
+                        </Button>
+                    </div>
+                </div>
+                <Divider />
 
-         <div className="flex items-center justify-between mb-6">
-            <TableSearch
-               onChange={(e) => {
-                  setSearchText(e.target.value);
-                  globalSearch();
-               }}
-               value={searchText}
-            />
-
-            <div className="flex items-center gap-6">
-               <Button
-                  title="Xuất file (.csv)"
-                  outline
-                  onClick={() => exportToCSV(dataTable)}
-               />
-               <Button
-                  title="Thêm gói vé"
-                  onClick={() => dispatch(onOpenModalAddTickets())}
-               />
+                <div className="max-w-xs md:max-w-full overflow-x-scroll md:overflow-hidden">
+                    <Table
+                        rowKey={'id'}
+                        dataSource={tickets}
+                        columns={columns}
+                        loading={isTicketLoading}
+                        locale={{
+                            emptyText: () =>
+                                isError ? (
+                                    <EmptyError onActionClick={loadTickets} buttonIcon={<ReloadOutlined spin={isTicketLoading} />} hasAction actionTitle="Tải lại" description="Đã xảy ra lỗi, vui lòng thử lại." />
+                                ) : (
+                                    <EmptyResult onActionClick={() => onOpen('create')} hasAction actionTitle="Thêm gói vé" description="Không tồn tại gói vé nào, bạn có thể thêm gói vé vào." />
+                                ),
+                        }}
+                        components={{
+                            header: {
+                                cell: (props: JSX.IntrinsicAttributes & ClassAttributes<HTMLTableHeaderCellElement> & ThHTMLAttributes<HTMLTableHeaderCellElement>) => {
+                                    return <th {...props} className="p-2 font-semibold whitespace-nowrap select-none" />
+                                },
+                            },
+                            body: {
+                                cell: (props: JSX.IntrinsicAttributes & ClassAttributes<HTMLTableDataCellElement> & TdHTMLAttributes<HTMLTableDataCellElement>) => {
+                                    return <td {...props} className="p-2" />
+                                },
+                            },
+                        }}
+                        rowClassName="text-secondary text-xs font-medium font-montserrat"
+                    />
+                </div>
             </div>
-         </div>
-         <Table
-            dataSource={
-               filteredData && filteredData.length > 0
-                  ? filteredData
-                  : dataTable
-            }
-            columns={columns}
-            rowClassName="text-secondary leading-[22px] text-sm font-medium text-center font-montserrat"
-            pagination={{
-               position: ['bottomCenter'],
-               className: 'mt-[50px]',
-               prevIcon: <BiSolidLeftArrow />,
-               nextIcon: <BiSolidRightArrow />,
-            }}
-         />
-      </div>
-   );
-};
+            <ModalTicket isOpen={modal.open} id={modal.id} onClose={onClose} type={modal.type} />
+        </>
+    )
+}
 
-export default ListOfTicketPackages;
+export default ListOfTicketPackages

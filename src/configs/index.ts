@@ -1,18 +1,20 @@
-import { initializeApp } from "firebase/app";
+import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
+import { getStorage } from 'firebase/storage'
 
-const config = {
-  apiKey: "AIzaSyDXJ-zQhkI9TLaGyAOzMuviD400QQYCTiM",
-  authDomain: "cms-ticket-sale-appli-cd8b5.firebaseapp.com",
-  projectId: "cms-ticket-sale-appli-cd8b5",
-  storageBucket: "cms-ticket-sale-appli-cd8b5.appspot.com",
-  messagingSenderId: "19843806980",
-  appId: "1:19843806980:web:694b856ab398772a5b8251",
-  measurementId: "G-NPNQM6W9KW"
-};
+const firebaseConfig = {
+    apiKey: 'AIzaSyB8YHBPhgNw3e6oHh8lGDZD0u_H0GTWc1I',
+    authDomain: 'cms-ticket-appli.firebaseapp.com',
+    projectId: 'cms-ticket-appli',
+    storageBucket: 'cms-ticket-appli.appspot.com',
+    messagingSenderId: '673662551135',
+    appId: '1:673662551135:web:f36e643888a2ebcf2407ea',
+    measurementId: 'G-9ZHWRJRPRK',
+}
 
 // Initialize Firebase
-const app = initializeApp(config);
+const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
+const storage = getStorage(app)
 
-export { db }
+export { db, storage }

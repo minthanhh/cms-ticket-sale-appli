@@ -5,143 +5,139 @@
 @tailwind utilities;
 
 * {
-   box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 html,
 body {
-   width: 100%;
-   height: 100%;
+    width: 100%;
+    height: 100%;
 }
 
 body {
-   font-family: 'Montserrat', sans-serif;
-   font-size: 14px;
-   background-color: #f9f6f4;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    background-color: #f9f6f4;
 }
 
 #root {
-   height: 100%;
+    height: 100%;
 }
 
 code {
-   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-      monospace;
+    font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
 }
 tr {
-   border-bottom: none !important
+    border-bottom: none !important;
 }
 
 @layer base {
-   .default-animate {
-      @apply transition-all ease-linear duration-200;
-   }  
-   
-   .flat::before {
-      content: '';
-      position: absolute;
-      right: -10px;
-      border: 10px solid;
-      @apply top-2/4 -translate-y-2/4
-      
-   }
+    .default-animate {
+        @apply transition-all ease-linear duration-200;
+    }
+
+    .flat::before {
+        content: '';
+        position: absolute;
+        right: -10px;
+        border: 10px solid;
+        @apply top-2/4 -translate-y-2/4;
+    }
 }
 
-.ant-table-thead {
-   @apply bg-[#f1f4f8] !important
+/* .ant-table-thead {
+    @apply bg-[#f1f4f8] !important;
 }
 
 .ant-table-thead > tr > .ant-table-cell {
-   @apply leading-[26px] font-semibold font-montserrat text-base text-center !important
+    @apply leading-[26px] font-semibold font-montserrat text-sm !important;
 }
 
 .ant-table-tbody > tr:nth-child(even) {
-   @apply bg-[#f7f8fb] 
+    @apply bg-[#f7f8fb];
 }
 
 .ant-table-cell {
-   @apply border-none !important
+    @apply border-none !important;
 }
-
 
 .ant-table-cell::before {
-   @apply w-0 !important
+    @apply w-0 !important;
 }
 
-
-.ant-pagination-prev, .ant-pagination-next {
-   @apply flex items-center justify-center text-[#ff993b] !important 
+.ant-pagination-prev,
+.ant-pagination-next {
+    @apply flex items-center justify-center text-[#ff993b] !important;
 }
 
-.ant-pagination-prev.ant-pagination-disabled, .ant-pagination-next.ant-pagination-disabled {
-   @apply text-[#a5a8b1] !important
+.ant-pagination-prev.ant-pagination-disabled,
+.ant-pagination-next.ant-pagination-disabled {
+    @apply text-[#a5a8b1] !important;
 }
 
 :where(.css-dev-only-do-not-override-txh9fw).ant-pagination .ant-pagination-item-active {
-   @apply border-[#ff993b]
+    @apply border-[#ff993b];
 }
 
 :where(.css-dev-only-do-not-override-txh9fw).ant-pagination .ant-pagination-item-active:hover {
-   @apply border-[#ff993b] 
+    @apply border-[#ff993b];
 }
 
 :where(.css-dev-only-do-not-override-txh9fw).ant-pagination .ant-pagination-item-active a {
-   @apply text-[#ffb877]
+    @apply text-[#ffb877];
 }
 
 :where(.css-dev-only-do-not-override-txh9fw).ant-pagination .ant-pagination-item-active:hover a {
-   @apply text-[#ffb877]
+    @apply text-[#ffb877];
 }
 
-.ant-table-row, .ant-table-cell {
-   @apply h-[48px] !important
+.ant-table-row,
+.ant-table-cell {
+    @apply h-[48px] !important;
 }
 
 .ant-modal-content {
-   @apply py-6 px-8 !important
+    @apply py-6 px-8 !important;
 }
 
-.ant-picker-header-super-prev-btn, .ant-picker-header-super-next-btn {
-   @apply hidden
+.ant-picker-header-super-prev-btn,
+.ant-picker-header-super-next-btn {
+    @apply hidden;
 }
 
 .ant-picker-header {
-   @apply gap-4 items-center justify-start p-0 border-none pt-6 px-6 mb-4 !important
+    @apply gap-4 items-center justify-start p-0 border-none pt-6 px-6 mb-4 !important;
 }
 
 .ant-picker-body {
-   @apply px-6 py-6 block !important
+    @apply px-6 py-6 block !important;
 }
-
 
 .ant-picker-header-view {
-   @apply flex flex-initial items-center font-montserrat font-bold text-lg   !important
+    @apply flex flex-initial items-center font-montserrat font-bold text-lg   !important;
 }
 
-
 .ant-picker-body {
-   @apply pt-0 !important
+    @apply pt-0 !important;
 }
 
 :where(.css-dev-only-do-not-override-txh9fw).ant-picker-dropdown .ant-picker-header button {
-   @apply leading-none
+    @apply leading-none;
 }
 
-.ant-picker-header-prev-btn, .ant-picker-header-next-btn {
-   @apply flex items-center justify-center
+.ant-picker-header-prev-btn,
+.ant-picker-header-next-btn {
+    @apply flex items-center justify-center;
 }
-
-
 
 .ant-picker-cell {
-   @apply  !important
+    @apply !important;
 }
 
 .ant-table-cell {
-   @apply relative select-none !important
+    @apply relative select-none py-0 px-2 !important;
 }
-
 
 .anticon svg {
-   @apply fill-[#FF993C] w-6 h-6
-}
+    @apply fill-[#FF993C] w-4 h-4;
+} */

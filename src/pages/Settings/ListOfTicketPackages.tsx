@@ -1,4 +1,4 @@
-import { ClassAttributes, memo, TdHTMLAttributes, ThHTMLAttributes, useCallback, useEffect, useState } from 'react'
+import { ClassAttributes, TdHTMLAttributes, ThHTMLAttributes, useCallback, useEffect, useState } from 'react'
 import Table, { ColumnsType } from 'antd/es/table'
 import { ITicket } from '@/types'
 import { FiEdit } from 'react-icons/fi'

@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { CheckTickets, Dashboard, EventPackage, FamilyPackage, ManageTicket } from './pages'
 import { DashboardLayout } from './layouts'
-import ModalAddTickets from './components/Modal/ModalAddTickets'
 import ModalUpdateTicketPakage from './components/Modal/ModalUpdateTicketPakage'
 import ModalFilter from './components/Modal/ModalFilter'
 import ListOfTicketPackages from './pages/Settings/ListOfTicketPackages'

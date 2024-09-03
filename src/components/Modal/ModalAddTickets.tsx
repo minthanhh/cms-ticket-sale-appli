@@ -2,14 +2,10 @@ import { Checkbox, DatePicker, Form, FormRule, Input, Modal, Select, Typography,
 import { useState, memo, useEffect } from 'react'
 import { useSelector } from 'react-redux'
 import { IoIosArrowDown } from 'react-icons/io'
-import { SerializedError } from '@reduxjs/toolkit'
 
 import { RootState } from '@/store'
-import { ITicketPackage } from '@/types'
-import { addTicket, addTicketPackage } from '@/store/slices/ticketSlice'
+import { addTicket } from '@/store/slices/ticketSlice'
 import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks'
-import HeadingModal from './HeadingModal'
-import { toast } from 'react-toastify'
 import { Timestamp } from 'firebase/firestore'
 
 const caculateSinglePrice = (quantity: string, comboPrice: string) => {
@@ -116,7 +112,7 @@ interface Props {
 
 const ModalAddTickets = ({ isOpen, onClose }: Props) => {
     const [form] = Form.useForm()
-    const [isFormSubmitting, setIsFormSubmitting] = useState(false)
+    const [, setIsFormSubmitting] = useState(false)
     const [isComboChecked, setIsComboChecked] = useState(false)
     const [isSingleChecked, setIsSingleChecked] = useState(false)
 
@@ -125,7 +121,6 @@ const ModalAddTickets = ({ isOpen, onClose }: Props) => {
     const isSingleOrComboChecked = isComboChecked || isSingleChecked
 
     const { isOpenModalAddTickets } = useSelector((state: RootState) => state.modal)
-    const { isLoading } = useAppSelector((state: RootState) => state.ticket)
     const dispatch = useAppDispatch()
 
     useEffect(() => {

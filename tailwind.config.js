@@ -45,6 +45,13 @@ module.exports = {
             placeholderColor: {
                 textPlaceholder: '#c0c3c9',
             },
+            height: {
+                'ins-header-height': 'var(--header-height)',
+                'ins-content-height': 'var(--content-height)',
+            },
+            margin: {
+                'ins-content-margin': 'var(--content-margin)',
+            },
         },
     },
     plugins: [require('daisyui')],

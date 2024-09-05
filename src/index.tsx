@@ -19,6 +19,12 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
                     Button: {
                         borderRadius: 3,
                     },
+                    Menu: {
+                        itemBg: '',
+                        itemColor: '#1e0d03',
+                        itemSelectedColor: '#fff',
+                        itemSelectedBg: '#f15a29',
+                    },
                 },
             }}>
             <Provider store={store}>

@@ -7,10 +7,11 @@ import { RootState } from '@/store'
 import { getTickets } from '@/store/slices/ticketSlice'
 import { AmountUtil } from '@/utilities/amount.util'
 import { JSX } from 'react/jsx-runtime'
-import { Button, Divider, Input, Tag, Typography } from 'antd'
+import { Button, Divider, Input, Tag } from 'antd'
 import { EmptyError, EmptyResult } from '@/components/Empties'
 import { ReloadOutlined } from '@ant-design/icons'
 import { ModalTicket } from '@/components/Modal/ModalTicket'
+import { ContentContainer } from '@/components'
 
 type ModalType = 'create' | 'edit'
 
@@ -110,52 +111,49 @@ const ListOfTicketPackages = () => {
     ]
 
     return (
-        <>
-            <div className="w-full h-[calc(100%_-_32px)] bg-white rounded-3xl shadow-md overflow-hidden mb-[32px] p-4">
-                <Typography.Title level={2}>Danh sách gói vé</Typography.Title>
-                <div className="flex items-center justify-between mb-4">
-                    <Input.Search className="w-1/4" />
-                    <div className="flex items-center gap-2">
-                        <Button htmlType="button">Xuất file (.csv)</Button>
-                        <Button onClick={() => onOpen('create')} htmlType="button" type="primary" className="bg-primary">
-                            Thêm gói vé
-                        </Button>
-                    </div>
-                </div>
-                <Divider />
-
-                <div className="max-w-xs md:max-w-full overflow-x-scroll md:overflow-hidden">
-                    <Table
-                        rowKey={'id'}
-                        dataSource={tickets}
-                        columns={columns}
-                        loading={isTicketLoading}
-                        locale={{
-                            emptyText: () =>
-                                isError ? (
-                                    <EmptyError onActionClick={loadTickets} buttonIcon={<ReloadOutlined spin={isTicketLoading} />} hasAction actionTitle="Tải lại" description="Đã xảy ra lỗi, vui lòng thử lại." />
-                                ) : (
-                                    <EmptyResult onActionClick={() => onOpen('create')} hasAction actionTitle="Thêm gói vé" description="Không tồn tại gói vé nào, bạn có thể thêm gói vé vào." />
-                                ),
-                        }}
-                        components={{
-                            header: {
-                                cell: (props: JSX.IntrinsicAttributes & ClassAttributes<HTMLTableHeaderCellElement> & ThHTMLAttributes<HTMLTableHeaderCellElement>) => {
-                                    return <th {...props} className="p-2 font-semibold whitespace-nowrap select-none" />
-                                },
-                            },
-                            body: {
-                                cell: (props: JSX.IntrinsicAttributes & ClassAttributes<HTMLTableDataCellElement> & TdHTMLAttributes<HTMLTableDataCellElement>) => {
-                                    return <td {...props} className="p-2" />
-                                },
-                            },
-                        }}
-                        rowClassName="text-secondary text-xs font-medium font-montserrat"
-                    />
+        <ContentContainer title="Danh sách gói vé">
+            <div className="flex items-center justify-between mb-4">
+                <Input.Search className="w-1/4" />
+                <div className="flex items-center gap-2">
+                    <Button htmlType="button">Xuất file (.csv)</Button>
+                    <Button onClick={() => onOpen('create')} htmlType="button" type="primary" className="bg-primary">
+                        Thêm gói vé
+                    </Button>
                 </div>
             </div>
+            <Divider />
+
+            <div className="max-w-xs md:max-w-full overflow-x-scroll md:overflow-hidden">
+                <Table
+                    rowKey={'id'}
+                    dataSource={tickets}
+                    columns={columns}
+                    loading={isTicketLoading}
+                    locale={{
+                        emptyText: () =>
+                            isError ? (
+                                <EmptyError onActionClick={loadTickets} buttonIcon={<ReloadOutlined spin={isTicketLoading} />} hasAction actionTitle="Tải lại" description="Đã xảy ra lỗi, vui lòng thử lại." />
+                            ) : (
+                                <EmptyResult onActionClick={() => onOpen('create')} hasAction actionTitle="Thêm gói vé" description="Không tồn tại gói vé nào, bạn có thể thêm gói vé vào." />
+                            ),
+                    }}
+                    components={{
+                        header: {
+                            cell: (props: JSX.IntrinsicAttributes & ClassAttributes<HTMLTableHeaderCellElement> & ThHTMLAttributes<HTMLTableHeaderCellElement>) => {
+                                return <th {...props} className="p-2 font-semibold whitespace-nowrap select-none" />
+                            },
+                        },
+                        body: {
+                            cell: (props: JSX.IntrinsicAttributes & ClassAttributes<HTMLTableDataCellElement> & TdHTMLAttributes<HTMLTableDataCellElement>) => {
+                                return <td {...props} className="p-2" />
+                            },
+                        },
+                    }}
+                    rowClassName="text-secondary text-xs font-medium font-montserrat"
+                />
+            </div>
             <ModalTicket isOpen={modal.open} id={modal.id} onClose={onClose} type={modal.type} />
-        </>
+        </ContentContainer>
     )
 }
 

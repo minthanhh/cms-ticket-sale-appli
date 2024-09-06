@@ -1,4 +1,4 @@
-import { Checkbox, DatePicker, Form, Input, Modal, Select, Typography, Button } from 'antd'
+import { Checkbox, DatePicker, Form, Input, Modal, Select, Typography, Button, Radio } from 'antd'
 import { useState, memo, useEffect } from 'react'
 import { IoIosArrowDown } from 'react-icons/io'
 import { Timestamp } from 'firebase/firestore'
@@ -12,6 +12,7 @@ import viVN from 'antd/es/date-picker/locale/vi_VN'
 import dayjs from 'dayjs'
 import { toast } from 'react-toastify'
 import { SerializedError } from '@reduxjs/toolkit'
+import { TicketPackageType } from '@/types'
 
 const INIT_VALUES = {
     ticketName: '',
@@ -21,6 +22,7 @@ const INIT_VALUES = {
     startDateApply: '',
     endDateExpiresIn: '',
     status: 'apply',
+    packageType: TicketPackageType.FAMILY_PACKAGE,
 }
 
 interface Props {
@@ -186,6 +188,14 @@ const ModalTicket = ({ isOpen, onClose, type, id }: Props) => {
                         suffixIcon={<IoIosArrowDown width={10.54} height={6.25} className="text-[#ff993b] font-bold" />}
                     />
                 </Form.Item>
+
+                <Form.Item required={false} label={<FormLabel label="Loại gói" />} name="packageType">
+                    <Radio.Group>
+                        <Radio value={TicketPackageType.FAMILY_PACKAGE}>Gói gia đình</Radio>
+                        <Radio value={TicketPackageType.EVENT_PACKAGE}>Gói sự kiện</Radio>
+                    </Radio.Group>
+                </Form.Item>
+
                 <p className="mb-[21px] italic leading-[14.63px] text-sm font-normal text-italic">
                     <span className="text-red-500 mr-1 leading-[26px] text-base font-montserrat font-semibold not-italic">*</span>
                     là thông tin bắt buộc

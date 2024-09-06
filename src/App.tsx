@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import { CheckTickets, Dashboard, EventPackage, FamilyPackage, ManageTicket } from './pages'
+import { CheckTickets, Dashboard, FamilyPackages, ManageTickets, EventPackages } from './pages'
 import { RootLayout, SidebarLayout } from './layouts'
 import ModalUpdateTicketPakage from './components/Modal/ModalUpdateTicketPakage'
 import ModalFilter from './components/Modal/ModalFilter'
@@ -14,7 +14,6 @@ const App = () => {
             <Router>
                 <ModalChangeTicketDay />
                 <ModalUpdateTicketPakage />
-                <ModalFilter />
                 <Toast />
                 <Routes>
                     <Route Component={RootLayout}>
@@ -22,10 +21,7 @@ const App = () => {
                             <Route Component={SidebarLayout}>
                                 <Route path="/" Component={Dashboard} />
                                 <Route path="checking-tickets" Component={CheckTickets} />
-                                <Route path="manage-tickets" Component={ManageTicket}>
-                                    <Route index path="family-ticket-packages" Component={FamilyPackage} />
-                                    <Route path="event-ticket-packages" Component={EventPackage} />
-                                </Route>
+                                <Route path="manage-tickets" Component={ManageTickets} />
                                 <Route path="settings">
                                     <Route index element={<Navigate to="ticket-packages" replace />} />
                                     <Route path="ticket-packages" Component={ListOfTicketPackages} />

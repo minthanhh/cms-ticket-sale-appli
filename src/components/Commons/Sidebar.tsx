@@ -2,7 +2,7 @@ import { Layout, Menu, MenuProps } from 'antd'
 import { useState } from 'react'
 import { MailOutlined, HomeOutlined, SettingOutlined, UnorderedListOutlined } from '@ant-design/icons'
 import insightLogo from '@/assets/images/logo.svg'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 const { Sider } = Layout
 
 type MenuItem = Required<MenuProps>['items'][number]
@@ -29,44 +29,46 @@ const getLevelKeys = (items1: LevelKeysProps[]) => {
 }
 
 const Sidebar = () => {
-    const [stateOpenKeys, setStateOpenKeys] = useState(['2', '23'])
+    const location = useLocation()
     const navigate = useNavigate()
+    const defaultSelectKey = [location.pathname.split('/')[1]]
+    const [stateOpenKeys, setStateOpenKeys] = useState(defaultSelectKey)
 
     const items: MenuItem[] = [
         {
-            key: '1',
+            key: '',
             icon: <HomeOutlined />,
             label: 'Trang chủ',
             onClick: () => navigate('/'),
         },
         {
-            key: '2',
+            key: 'manage-tickets',
             icon: <MailOutlined />,
             label: 'Quản lý vé',
             onClick: () => navigate('/manage-tickets'),
         },
         {
-            key: '3',
+            key: 'checking-tickets',
             icon: <SettingOutlined />,
             label: 'Đối soát vé',
             onClick: () => navigate('/checking-tickets'),
         },
         {
-            key: '4',
+            key: 'events',
             icon: <UnorderedListOutlined />,
             label: 'Danh sách sự kiện',
             onClick: () => navigate('/events'),
             disabled: true,
         },
         {
-            key: '5',
+            key: 'manage-devices',
             icon: <SettingOutlined />,
             label: 'Quản lý thiết bị',
             onClick: () => navigate('/manage-devices'),
             disabled: true,
         },
         {
-            key: '6',
+            key: 'settings',
             icon: <SettingOutlined />,
             label: 'Cài đặt',
             onClick: () => navigate('/settings'),
@@ -106,7 +108,7 @@ const Sidebar = () => {
             }}
             className="bg-transparent px-4">
             <img src={insightLogo} alt="insight Logo" className="mt-10 my-20" />
-            <Menu mode="inline" defaultSelectedKeys={['1']} openKeys={stateOpenKeys} onOpenChange={onOpenChange} items={items} className="bg-transparent border-none" />
+            <Menu mode="inline" defaultSelectedKeys={defaultSelectKey} openKeys={stateOpenKeys} onOpenChange={onOpenChange} items={items} className="bg-transparent border-none" />
         </Sider>
     )
 }

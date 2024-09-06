@@ -32,7 +32,29 @@ export interface ITicket {
     startDateApply: string
     endDateExpiresIn: string
     checkInGate: string
-    ticketType: string
+    packageType: string
     bookingCode: string
     quantity: string
+    usageStatus: string
+    createdAt?: string
+    updatedAt?: string
+}
+
+export enum TicketPackageType {
+    FAMILY_PACKAGE = 'FAMILY',
+    EVENT_PACKAGE = 'EVENT',
+}
+
+export enum UsageStatus {
+    NOTUSED = 'NOTUSED',
+    USED = 'USED',
+    EXPIRED = 'EXPIRED',
+}
+
+export type FilterValues = {
+    usageStatus: string
+    startDateApply: string
+    endDateExpiresIn: string
+    checkingGate: string[]
+    verifyTicket: boolean
 }

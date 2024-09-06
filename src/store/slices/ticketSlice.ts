@@ -1,9 +1,9 @@
 import { db } from '@/configs'
-import { ITicket, ITicketPackage } from '@/types'
+import { FilterValues, ITicket, ITicketPackage, UsageStatus } from '@/types'
 import { SerializedError, createAsyncThunk } from '@reduxjs/toolkit'
 import { createSlice } from '@reduxjs/toolkit'
 import dayjs from 'dayjs'
-import { addDoc, collection, doc, getCountFromServer, getDocs, orderBy, query, Timestamp, updateDoc, writeBatch } from 'firebase/firestore'
+import { addDoc, and, collection, doc, getCountFromServer, getDocs, orderBy, query, QueryFieldFilterConstraint, Timestamp, updateDoc, where, writeBatch } from 'firebase/firestore'
 
 const convertTimestampToSerializable = (timestamp: Timestamp) => {
     return timestamp.toDate().toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' })
@@ -44,7 +44,7 @@ const randomGate = (): string => {
         return '-'
     } else {
         const randomNum = Math.floor(Math.random() * (max - min + 1)) + min
-        return `Cổng ${randomNum}`
+        return `GATE${randomNum}`
     }
 }
 
@@ -146,7 +146,16 @@ export const startUsingTicket = createAsyncThunk('tickets/startUsingTicket', asy
 // #region addTicketThunk
 export const addTicket = createAsyncThunk('tickets/addTicket', async (ticket: any, thunk) => {
     try {
-        ticket = { ...ticket, bookingCode: randomBookingCode(), checkInGate: randomGate(), ticketTypeName: 'Vé cổng' }
+        ticket = {
+            ...ticket,
+            bookingCode: randomBookingCode(),
+            checkingGate: randomGate(),
+            ticketTypeName: 'Vé cổng',
+            usageStatus: UsageStatus.NOTUSED,
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+            verifyTicket: false,
+        }
         const coll = collection(db, 'tickets')
         const docRef = await addDoc(coll, ticket)
         return {
@@ -154,6 +163,8 @@ export const addTicket = createAsyncThunk('tickets/addTicket', async (ticket: an
             ...ticket,
             startDateApply: convertTimestampToSerializable(ticket.startDateApply),
             endDateExpiresIn: convertTimestampToSerializable(ticket.endDateExpiresIn),
+            createdAt: convertTimestampToSerializable(ticket.createdAt),
+            updatedAt: convertTimestampToSerializable(ticket.updatedAt),
         }
     } catch (err) {
         return thunk.rejectWithValue(err)
@@ -164,11 +175,12 @@ export const addTicket = createAsyncThunk('tickets/addTicket', async (ticket: an
 export const updateTicket = createAsyncThunk('tickets/updateTicket', async (ticket: any, thunk) => {
     try {
         const docRef = doc(db, 'tickets', ticket.id)
-        await updateDoc(docRef, ticket)
+        await updateDoc(docRef, { ...ticket, updatedAt: Timestamp.now() })
         return {
             ...ticket,
             startDateApply: convertTimestampToSerializable(ticket.startDateApply),
             endDateExpiresIn: convertTimestampToSerializable(ticket.endDateExpiresIn),
+            updatedAt: convertTimestampToSerializable(Timestamp.now()),
         }
     } catch (err) {
         return thunk.rejectWithValue(err)
@@ -176,18 +188,50 @@ export const updateTicket = createAsyncThunk('tickets/updateTicket', async (tick
 })
 
 // #region getTicketsThunk
-export const getTickets = createAsyncThunk('tickets/getTickets', async (_, thunk) => {
+export const getTickets = createAsyncThunk('tickets/getTickets', async (filterValues?: FilterValues | undefined, thunk?) => {
     try {
         const coll = collection(db, 'tickets')
-        const querySnapshot = await getDocs(coll)
-        return querySnapshot.docs.map((doc) => ({
+        let queryConditions: QueryFieldFilterConstraint[] = []
+
+        if (filterValues) {
+            if (filterValues?.['checkingGate']?.length > 0 && filterValues?.['checkingGate']?.[0] !== 'ALL') {
+                queryConditions.push(where('checkingGate', 'in', filterValues['checkingGate']))
+            }
+
+            if (filterValues?.['usageStatus'] !== undefined && filterValues?.['usageStatus'] !== 'ALL') {
+                queryConditions.push(where('usageStatus', '==', filterValues['usageStatus']))
+            }
+
+            if (filterValues?.['verifyTicket'] !== undefined && typeof filterValues?.['verifyTicket'] !== 'string') {
+                queryConditions.push(where('verifyTicket', '==', filterValues['verifyTicket']))
+            }
+
+            if (filterValues?.['startDateApply'] !== undefined && filterValues?.['startDateApply'] !== '') {
+                queryConditions.push(where('endDateExpiresIn', '<=', Timestamp.fromDate(new Date(filterValues.startDateApply))))
+            }
+        }
+
+        const querySnapshot = await getDocs(query(coll, and(...queryConditions), orderBy('createdAt', 'asc')))
+
+        const filteredDocs = querySnapshot.docs.filter((doc) => {
+            const docData = doc.data()
+            if (filterValues?.['endDateExpiresIn'] !== undefined && filterValues?.['endDateExpiresIn'] !== '') {
+                const endDateExpiresIn = Timestamp.fromDate(new Date(filterValues.endDateExpiresIn))
+                return docData.startDateApply.toDate() <= endDateExpiresIn.toDate()
+            }
+            return true
+        })
+
+        return filteredDocs.map((doc) => ({
             ...doc.data(),
             id: doc.id,
             startDateApply: convertTimestampToSerializable(doc.data().startDateApply),
             endDateExpiresIn: convertTimestampToSerializable(doc.data().endDateExpiresIn),
+            updatedAt: convertTimestampToSerializable(doc.data().updatedAt),
+            createdAt: convertTimestampToSerializable(doc.data().createdAt),
         }))
     } catch (err) {
-        return thunk.rejectWithValue(err)
+        return thunk?.rejectWithValue(err)
     }
 })
 

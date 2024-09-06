@@ -1,4 +1,4 @@
-import { Heading } from '@/components'
+import { ContentContainer } from '@/components'
 import { Line, Doughnut } from 'react-chartjs-2'
 import { useEffect, useState } from 'react'
 import { Chart as ChartJS, CategoryScale, LineElement, LinearScale, PointElement, ChartData, Point } from 'chart.js/auto'
@@ -101,11 +101,7 @@ const Dashboard = () => {
     }, [listTicketPackage])
 
     return (
-        <div className="w-full h-full">
-            <Typography.Title level={2} className="font-bold">
-                Thống kê
-            </Typography.Title>
-
+        <ContentContainer title="Thống kê">
             <div className="relative mb-10 h-[200px]">
                 <div className="flex items-center justify-between">
                     <Typography.Title level={5}>Doanh thu</Typography.Title>
@@ -205,7 +201,7 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
-        </div>
+        </ContentContainer>
     )
 }
 

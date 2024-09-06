@@ -7,13 +7,13 @@ import { MoreOutlined, ReloadOutlined } from '@ant-design/icons'
 import { EmptyError, EmptyResult } from '@/components/Empties'
 
 interface Props {
-    familyPackages: ITicket[]
+    eventPackages: ITicket[]
     isTicketLoading: boolean
     loadTickets: () => void
     isError: boolean
 }
 
-const FamilyPackages = ({ familyPackages, isTicketLoading, loadTickets, isError }: Props) => {
+const EventPackages = ({ eventPackages, isTicketLoading, loadTickets, isError }: Props) => {
     const columns: TableColumnsType<ITicket> = [
         {
             title: 'STT',
@@ -38,14 +38,14 @@ const FamilyPackages = ({ familyPackages, isTicketLoading, loadTickets, isError 
         },
         {
             width: 110,
-            title: 'Ngày sử dụng',
-            dataIndex: 'endDateExpiresIn',
+            title: 'Ngày áp dụng',
+            dataIndex: 'startDateApply',
             sorter: true,
         },
         {
             width: 110,
-            title: 'Ngày Xuất vé',
-            dataIndex: 'startDateApply',
+            title: 'Ngày hết hạn',
+            dataIndex: 'endDateExpiresIn',
             sorter: true,
         },
         {
@@ -84,7 +84,7 @@ const FamilyPackages = ({ familyPackages, isTicketLoading, loadTickets, isError 
             rowKey="id"
             className="w-full"
             columns={columns}
-            dataSource={familyPackages}
+            dataSource={eventPackages}
             loading={isTicketLoading}
             onHeaderRow={() => ({ className: 'bg-[#F1F4F8]' })}
             locale={{
@@ -112,4 +112,4 @@ const FamilyPackages = ({ familyPackages, isTicketLoading, loadTickets, isError 
     )
 }
 
-export default FamilyPackages
+export default EventPackages

@@ -1,61 +1,45 @@
-import { Button, Heading } from '@/components'
-import TableSearch from '@/components/Table/SearchTable'
-import { ITicketPackage } from '@/types'
-import { DatePicker, Radio, Table } from 'antd'
+import { FilterValues, ITicket } from '@/types'
+import { Button, DatePicker, Divider, Form, Input, Radio, Space, Table, Typography } from 'antd'
 import type { TableColumnsType } from 'antd'
-import { useEffect, useState } from 'react'
-import { BiSolidLeftArrow, BiSolidRightArrow } from 'react-icons/bi'
+import { ClassAttributes, TdHTMLAttributes, ThHTMLAttributes, useCallback, useEffect, useState } from 'react'
 import { twMerge } from 'tailwind-merge'
 import { LuCalendarDays } from 'react-icons/lu'
-import dayjs from 'dayjs'
 import { useAppDispatch, useAppSelector } from '@/hooks/storeHooks'
 import { RootState } from '@/store'
-import { getAllTicketPackage } from '@/store/slices/ticketSlice'
-import { checkTickets } from '@/store/slices/ticketSlice'
-import { exportToCSV } from '@/helpers'
+import { getAllTicketPackage, getTickets } from '@/store/slices/ticketSlice'
+import { EmptyError, EmptyResult } from '@/components/Empties'
+import { ReloadOutlined } from '@ant-design/icons'
+import { ContentContainer } from '@/components'
+
+const INIT_VALUES = {
+    startDate: '',
+    endDate: '',
+    verifyTicket: 'ALL',
+}
 
 const CheckTickets = () => {
-    const { listTicketPackage, isLoading } = useAppSelector((state: RootState) => state.ticket)
-
     const dispatch = useAppDispatch()
-    const [dataTable, setDataTable] = useState<ITicketPackage[]>([])
-    const [filterdData, setFilteredData] = useState<ITicketPackage[]>([])
-    const [searchText, setSearchText] = useState<string>('')
-    const [checkTicket, setCheckTicket] = useState<boolean>()
-    const [startDate, setStartDate] = useState('')
-    const [endDate, setEndDate] = useState('')
-    const [checkedTicket, setCheckedTicket] = useState(false)
+    const { tickets, isTicketLoading } = useAppSelector((state: RootState) => state.ticket)
+    const [isError, setIsError] = useState(false)
 
-    const columns: TableColumnsType<ITicketPackage> = [
+    const columns: TableColumnsType<ITicket> = [
         {
             title: 'STT',
-            dataIndex: 'stt',
-            key: 'stt',
+            width: 10,
+            render: (_value, _record, index) => ++index,
         },
         {
-            title: 'Số vé',
-            dataIndex: 'ticketNumber',
-            key: 'ticketNumber',
+            width: 250,
+            title: 'Tên gói vé',
+            dataIndex: 'ticketName',
         },
         {
-            title: 'Ngày sử dụng',
-            dataIndex: 'effectiveDate',
-            key: 'effectiveDate',
-            render(value, _) {
-                return `${value.date}`
-            },
-        },
-        {
-            title: 'Tên loại vé',
-            dataIndex: 'ticketTypeName',
-            key: 'ticketTypeName',
-        },
-        {
+            width: 110,
             title: 'Cổng check - in',
-            dataIndex: 'checkInGate',
-            key: 'checkInGate',
+            dataIndex: 'checkingGate',
         },
         {
+            width: 110,
             dataIndex: 'checkTicket',
             key: 'checkTicket',
             render(value) {
@@ -64,154 +48,93 @@ const CheckTickets = () => {
         },
     ]
 
+    const loadTickets = useCallback(
+        (filterValues?: FilterValues) => {
+            dispatch(getTickets(filterValues)).catch((error) => {
+                console.error(error)
+                setIsError(true)
+            })
+        },
+        [dispatch],
+    )
+
+    useEffect(() => loadTickets(), [loadTickets])
+
     useEffect(() => {
         dispatch(getAllTicketPackage())
     }, [dispatch])
 
-    useEffect(() => {
-        setDataTable(listTicketPackage)
-    }, [listTicketPackage])
-
-    useEffect(() => {
-        const check = dataTable.every((i) => i.checkTicket === true)
-        setCheckedTicket(check)
-    }, [dataTable])
-
-    const handleFilterTable = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-
-        if (startDate && endDate) {
-            const format = 'DD/MM/YYYY'
-            const start = dayjs(startDate, format).date()
-            const end = dayjs(endDate, format).date()
-
-            const filter = dataTable.filter((item) => {
-                const day = dayjs(item.effectiveDate.date, format).date()
-
-                if (checkTicket === true) {
-                    return item.checkTicket === checkTicket && day >= start && day <= end
-                }
-
-                if (checkTicket === false) {
-                    return item.checkTicket === checkTicket && day >= start && day <= end
-                }
-
-                return day >= start && day <= end
-            })
-            setFilteredData(filter)
-        } else {
-            const filter = dataTable.filter((item) => {
-                if (checkTicket === true) {
-                    return item.checkTicket === checkTicket
-                }
-
-                if (checkTicket === false) {
-                    return item.checkTicket === checkTicket
-                }
-
-                return item
-            })
-            setFilteredData(filter)
-        }
-    }
-
-    const globalSearch = () => {
-        const filteredData = dataTable.filter((i) => i.ticketNumber?.toString().toLowerCase().includes(searchText))
-
-        setFilteredData(filteredData)
-    }
-
     return (
-        <div className="w-full h-[calc(100%_-_32px)] flex items-start gap-6">
-            <div className="bg-white rounded-3xl shadow-md p-6 w-8/12 h-full">
-                <Heading title="Đối soát vé" />
-
-                <div className="flex items-center justify-between mb-6">
-                    <TableSearch
-                        onChange={(e) => {
-                            setSearchText(e.target.value)
-                            globalSearch()
-                        }}
-                        value={searchText}
-                    />
-                    {checkedTicket ? <Button title="Xuất file (.csv)" outline onClick={() => exportToCSV(dataTable)} /> : <Button title="Chốt đối soát" onClick={() => dispatch(checkTickets())} disabled={isLoading} />}
+        <div className="flex items-center w-full h-full gap-4">
+            <ContentContainer title="Quản lý vé" className="w-3/4">
+                <div className="flex items-center justify-between mb-4">
+                    <Input.Search className="w-4/6" placeholder="Tìm bằng số vé" />
+                    <Button htmlType="button">Xuất file (.csv)</Button>
                 </div>
+                <Divider />
 
                 <Table
+                    rowKey="id"
+                    className="w-full"
                     columns={columns}
-                    dataSource={filterdData && filterdData.length > 0 ? filterdData : dataTable}
-                    rowClassName={'text-secondary leading-[22px] text-sm font-medium text-center font-montserrat'}
-                    pagination={{
-                        position: ['bottomCenter'],
-                        className: 'mt-[50px]',
-                        prevIcon: <BiSolidLeftArrow />,
-                        nextIcon: <BiSolidRightArrow />,
+                    dataSource={tickets}
+                    loading={isTicketLoading}
+                    onHeaderRow={() => ({ className: 'bg-[#F1F4F8]' })}
+                    locale={{
+                        emptyText: () =>
+                            isError ? (
+                                <EmptyError onActionClick={loadTickets} buttonIcon={<ReloadOutlined spin={isTicketLoading} />} hasAction actionTitle="Tải lại" description="Đã xảy ra lỗi, vui lòng thử lại." />
+                            ) : (
+                                <EmptyResult onActionClick={() => {}} hasAction actionTitle="Thêm gói vé" description="Không tồn tại gói vé nào, bạn có thể thêm gói vé vào." />
+                            ),
                     }}
+                    components={{
+                        header: {
+                            cell: (props: JSX.IntrinsicAttributes & ClassAttributes<HTMLTableHeaderCellElement> & ThHTMLAttributes<HTMLTableHeaderCellElement>) => {
+                                return <th {...props} className="p-2 font-semibold whitespace-nowrap select-none" />
+                            },
+                        },
+                        body: {
+                            cell: (props: JSX.IntrinsicAttributes & ClassAttributes<HTMLTableDataCellElement> & TdHTMLAttributes<HTMLTableDataCellElement>) => {
+                                return <td {...props} className="p-2" />
+                            },
+                        },
+                    }}
+                    rowClassName="text-secondary text-xs font-medium font-montserrat even:bg-ins-table-even-row-background odd:bg-ins-table-odd-row-background"
                 />
-            </div>
-
-            <div className="bg-white rounded-3xl shadow-md w-4/12 h-full p-6">
-                <Heading title="Lọc vé" />
-
-                <form onSubmit={handleFilterTable}>
-                    <table className="table">
-                        <tbody>
-                            <tr className="text-left">
-                                <td className="align-text-top">
-                                    <span className="mr-[26px] text-base leading-[26px] font-semibold font-montserrat">Tình trạng đối soát</span>
-                                </td>
-                                <td>
-                                    <Radio.Group className="flex flex-col select-none mb-6" onChange={(e) => setCheckTicket(e.target.value)} value={checkTicket}>
-                                        <label htmlFor="ticketFilterAll" className="leading-[19.5px] cursor-pointer font-montserrat text-base font-medium flex gap-2 items-center">
-                                            <Radio name="checkTicket" />
-                                            Tất cả
-                                        </label>
-                                        <label htmlFor="ticketFilterCheck" className="leading-[19.5px] cursor-pointer font-montserrat text-base font-medium flex gap-2 items-center">
-                                            <Radio name="checkTicket" value={true} />
-                                            Đã đối soát
-                                        </label>
-                                        <label htmlFor="ticketFilterNotCheck" className="leading-[19.5px] cursor-pointer font-montserrat text-base font-medium flex gap-2 items-center">
-                                            <Radio name="checkTicket" value={false} />
-                                            Chưa đối soát
-                                        </label>
-                                    </Radio.Group>
-                                </td>
-                            </tr>
-                            <tr className="text-left">
-                                <td className="align-text-top">
-                                    <span className="mr-[26px] text-base leading-[26px] font-semibold font-montserrat">Loại vé</span>
-                                </td>
-                                <td>
-                                    <span className="text-base font-montserrat font-medium leading-[19.5px] mb-6 block">Vé cổng</span>
-                                </td>
-                            </tr>
-                            <tr className="text-left">
-                                <td className="align-text-top">
-                                    <span className="mr-[26px] text-base leading-[26px] font-semibold font-montserrat">Từ ngày</span>
-                                </td>
-                                <td>
-                                    <DatePicker className="mb-6" onChange={(_, dateString) => setStartDate(dateString)} format={'DD/MM/YYYY'} placeholder="dd/mm/yy" suffixIcon={<LuCalendarDays />} />
-                                </td>
-                            </tr>
-                            <tr className="text-left">
-                                <td className="align-text-top">
-                                    <span className="mr-[26px] text-base leading-[26px] font-semibold font-montserrat">Đến ngày</span>
-                                </td>
-                                <td>
-                                    <DatePicker placeholder="dd/mm/yy" onChange={(_, dateString) => setEndDate(dateString)} className="mb-6" format={'DD/MM/YYYY'} suffixIcon={<LuCalendarDays />} />
-                                </td>
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <td colSpan={2}>
-                                    <Button title="Lọc" outline className="w-[160px] mx-auto" type="submit" />
-                                </td>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </form>
-            </div>
+            </ContentContainer>
+            <ContentContainer title="Lọc vé" className="w-2/6">
+                <Typography.Title level={3} className="font-bold"></Typography.Title>
+                <Form
+                    labelCol={{ span: 10 }}
+                    wrapperCol={{ span: 12 }}
+                    labelAlign="left"
+                    initialValues={INIT_VALUES}
+                    onFinish={(values: FilterValues) => {
+                        loadTickets(values)
+                    }}>
+                    <Form.Item label="Tình trạng đối soát" name="verifyTicket">
+                        <Radio.Group>
+                            <Space direction="vertical">
+                                <Radio value={'ALL'}>Tất cả</Radio>
+                                <Radio value={true}>Đã đối soát</Radio>
+                                <Radio value={false}>Chưa đối soát</Radio>
+                            </Space>
+                        </Radio.Group>
+                    </Form.Item>
+                    <Form.Item label="Từ ngày" name="startDate">
+                        <DatePicker format={'DD/MM/YYYY'} placeholder="dd/mm/yy" suffixIcon={<LuCalendarDays />} />
+                    </Form.Item>
+                    <Form.Item label="Từ ngày" name="endDate">
+                        <DatePicker format={'DD/MM/YYYY'} placeholder="dd/mm/yy" suffixIcon={<LuCalendarDays />} />
+                    </Form.Item>
+                    <Form.Item className="text-center" labelCol={{ span: 0 }} wrapperCol={{ span: 0 }}>
+                        <Button className="border-primary text-primary" htmlType="submit">
+                            Lọc
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </ContentContainer>
         </div>
     )
 }

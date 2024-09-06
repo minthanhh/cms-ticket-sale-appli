@@ -13,6 +13,11 @@
     /* tags: h, p */
     --text-primary-color: #1e0d03;
 
+    /* Table colors */
+    --table-head-background: #f1f4f8;
+    --table-even-row-background: #f7f8fb;
+    --table-odd-row-background: #ffffff;
+
     /* #1E0D03 */
 }
 
